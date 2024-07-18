@@ -1,0 +1,26 @@
+{
+	"name": "@repo/pocketbase",
+	"version": "0.0.1",
+	"private": true,
+	"scripts": {
+		"dev": "bun docker:start || bun docker:run",
+		"stop": "bun docker:stop",
+		"first-time": "bun docker:build",
+		"docker:build": "docker build -t chrono-pb .",
+		"docker:run": "docker run --name chrono-pb -d -p 8090:8090 -v ./pb_data:/pb/pb_data -v ./pb_migrations:/pb/pb_migrations -v ./pb_hooks:/pb/pb_hooks chrono-pb",
+		"docker:start": "docker start chrono-pb",
+		"docker:stop": "docker stop chrono-pb",
+		"docker:rm": "docker rm chrono-pb",
+		"pb:migration-new": "docker exec -it chrono-pb ./pb/pocketbase migrate create --",
+		"pb:migration-sync": "docker exec -it chrono-pb ./pb/pocketbase migrate history-sync"
+	},
+	"type": "module",
+	"packageManager": "pnpm@9.4.0",
+	"engines": {
+		"node": ">=20"
+	},
+	"volta": {
+		"node": "20.15.0",
+		"bun": "1.1.18"
+	}
+}

@@ -1,0 +1,48 @@
+{
+	"name": "chrono",
+	"private": true,
+	"scripts": {
+		"build": "turbo build",
+		"dev": "turbo dev",
+		"lint": "turbo lint",
+		"stop": "turbo stop",
+		"format": "prettier --write .",
+		"test": "turbo test:e2e",
+		"test:unit": "turbo test:unit",
+		"first-time": "turbo first-time",
+		"update": "ncu -uiws --root --format group --install always"
+	},
+	"devDependencies": {
+		"@types/bun": "^1.1.6",
+		"eslint": "^9.7.0",
+		"eslint-config-prettier": "^9.1.0",
+		"eslint-config-turbo": "^2.0.7",
+		"eslint-plugin-only-warn": "^1.1.0",
+		"npm-check-updates": "^16.14.20",
+		"prettier": "^3.3.3",
+		"prettier-plugin-svelte": "^3.2.6",
+		"prettier-plugin-tailwindcss": "^0.6.5",
+		"turbo": "^2.0.7",
+		"typescript-eslint": "^7.16.1"
+	},
+	"workspaces": [
+		"apps/*",
+		"packages/*"
+	],
+	"packageManager": "bun@1.1.18",
+	"engines": {
+		"node": ">=20"
+	},
+	"volta": {
+		"node": "20.15.0",
+		"bun": "1.1.18"
+	},
+	"trustedDependencies": [
+		"@sveltejs/kit",
+		"esbuild",
+		"msw",
+		"sharp",
+		"sqlite3",
+		"svelte-preprocess"
+	]
+}

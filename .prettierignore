@@ -1,0 +1,11 @@
+pnpm-lock.yaml
+# Build Outputs
+.vercel
+.next/
+out/
+build
+dist
+.svelte-kit/
+**/vite.config.ts.timestamp*
+pb_data/
+

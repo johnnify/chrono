@@ -1,0 +1,25 @@
+{
+	"$schema": "https://turbo.build/schema.json",
+	"globalDependencies": ["**/.env.*local"],
+	"tasks": {
+		"build": {
+			"dependsOn": ["^build"],
+			"outputs": [
+				".next/**",
+				"!.next/cache/**",
+				".svelte-kit/**",
+				".vercel/**"
+			],
+			"env": ["MSW_ENABLED", "PB_API_URL", "PUBLIC_PB_API_URL"]
+		},
+		"dev": {
+			"cache": false,
+			"persistent": true
+		},
+		"lint": {},
+		"test:e2e": {},
+		"test:unit": {},
+		"stop": {},
+		"first-time": {}
+	}
+}

@@ -1,0 +1,67 @@
+<script lang="ts">
+	import type {SVGAttributes} from 'svelte/elements'
+
+	type Props = {
+		open: boolean
+	} & SVGAttributes<EventTarget>
+
+	let {open = false, ...restProps}: Props = $props()
+</script>
+
+<svg
+	viewBox="0 0 100 100"
+	fill="none"
+	stroke="currentColor"
+	stroke-width="5"
+	class="w-10"
+	class:open
+	{...restProps}
+>
+	<path
+		class="top"
+		d="m 30,33 h 40 c 3.722839,0 7.5,3.126468 7.5,8.578427 0,5.451959 -2.727029,8.421573 -7.5,8.421573 h -20"
+	/>
+	<path class="middle" d="m 30,50 h 40" />
+	<path
+		class="bottom"
+		d="m 70,67 h -40 c 0,0 -7.5,-0.802118 -7.5,-8.365747 0,-7.563629 7.5,-8.634253 7.5,-8.634253 h 20"
+	/>
+</svg>
+
+<style>
+	:root {
+		--transition-duration: 300ms;
+	}
+
+	svg {
+		transition: transform var(--transition-duration) ease-out;
+	}
+
+	.top {
+		stroke-dasharray: 40 160;
+		transition: stroke-dashoffset var(--transition-duration) ease-out;
+	}
+
+	.middle {
+		transform-origin: 50%;
+		transition: transform var(--transition-duration) ease-out;
+	}
+
+	.bottom {
+		stroke-dasharray: 40 85;
+		transition: stroke-dashoffset var(--transition-duration) ease-out;
+	}
+
+	.open {
+		transform: rotate(45deg);
+
+		.top,
+		.bottom {
+			stroke-dashoffset: -64px;
+		}
+
+		.middle {
+			transform: rotate(90deg);
+		}
+	}
+</style>
