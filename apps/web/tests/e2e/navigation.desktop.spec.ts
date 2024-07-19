@@ -15,6 +15,19 @@ test('navigation smoke test', async ({page}) => {
 	// use the header for navigation
 	const bannerElement = page.getByRole('banner')
 
+	// navigate to Livestreams Page
+	await bannerElement.getByRole('link', {name: 'livestreams'}).click()
+	await expect(
+		page.getByRole('heading', {name: 'Livestreams', level: 1}),
+	).toBeVisible()
+	await expect(page).toHaveTitle(/Livestreams/)
+	await expect(
+		page.getByRole('heading', {
+			name: 'Chrono',
+			level: 1,
+		}),
+	).toBeHidden()
+
 	// navigate to About Page
 	await bannerElement.getByRole('link', {name: 'about'}).click()
 	await expect(
@@ -23,7 +36,7 @@ test('navigation smoke test', async ({page}) => {
 	await expect(page).toHaveTitle(/About/)
 	await expect(
 		page.getByRole('heading', {
-			name: 'Chrono',
+			name: 'Livestreams',
 			level: 1,
 		}),
 	).toBeHidden()

@@ -1,3 +1,5 @@
+import type {LivestreamsRepoInterface} from '$lib/repos/livestreams/LivestreamsRepoInterface'
+
 declare global {
 	// fresh API just dropped, let's extend Document
 	interface Document {
@@ -16,7 +18,9 @@ declare global {
 
 	namespace App {
 		// interface Error {}
-		interface Locals {}
+		interface Locals {
+			livestreamsRepo: LivestreamsRepoInterface
+		}
 		// interface PageData {}
 		// interface PageState {}
 		// interface Platform {}

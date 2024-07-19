@@ -17,6 +17,9 @@
 		<!-- Desktop nav -->
 		<ul class="hidden items-center gap-1 sm:flex sm:gap-2">
 			<li>
+				<Button variant="ghost" href="/livestreams">livestreams</Button>
+			</li>
+			<li>
 				<Button variant="ghost" href="/about">about</Button>
 			</li>
 		</ul>

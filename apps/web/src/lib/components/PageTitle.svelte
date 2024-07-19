@@ -11,8 +11,8 @@
 
 <h1
 	class={cn(
-		className,
 		'font-fancy text-primary scroll-m-20 text-5xl font-black tracking-tight lg:text-6xl',
+		className,
 	)}
 	{...restProps}
 >
