@@ -8,7 +8,7 @@
 	<section
 		class="flex min-h-[40svh] grow flex-col items-center justify-center gap-12 text-center"
 	>
-		<Logo class="fill-primary w-24" />
+		<Logo class="dark:fill-primary-foreground w-24 fill-rose-900" />
 
 		<PageTitle>Chrono</PageTitle>
 
