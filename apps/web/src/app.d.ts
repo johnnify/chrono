@@ -1,4 +1,6 @@
+import type {Session, User} from 'lucia'
 import type {LivestreamsRepoInterface} from '$lib/repos/livestreams/LivestreamsRepoInterface'
+import type {UsersRepoInterface} from '$lib/repos/users/UsersRepoInterface'
 
 declare global {
 	// fresh API just dropped, let's extend Document
@@ -19,6 +21,9 @@ declare global {
 	namespace App {
 		// interface Error {}
 		interface Locals {
+			user: User | null
+			session: Session | null
+			usersRepo: UsersRepoInterface
 			livestreamsRepo: LivestreamsRepoInterface
 		}
 		// interface PageData {}

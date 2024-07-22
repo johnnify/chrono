@@ -7,4 +7,5 @@ Web interface for image management, implemented with SvelteKit!
 - Meta framework: [SvelteKit](https://kit.svelte.dev/)
 - Styling: [Tailwind](https://tailwindcss.com/) with [shadcn-svelte](https://github.com/huntabyte/shadcn-svelte)
 - Browser tests: [Playwright](https://playwright.dev/)
-- Backend + CMS: [PocketBase](https://pocketbase.io/)
+- Database & ORM: [Turso](https://docs.turso.tech/introduction) with [Drizzle](https://orm.drizzle.team/)
+- Auth: [Lucia](https://lucia-auth.com/)

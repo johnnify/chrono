@@ -98,7 +98,7 @@ export default defineConfig({
 	/* Run your local dev server before starting the tests */
 	webServer: !process.env.PUBLIC_ROOT_URL
 		? {
-				command: 'bun dev',
+				command: 'pnpm dev',
 				port: 5173,
 				reuseExistingServer: true,
 			}

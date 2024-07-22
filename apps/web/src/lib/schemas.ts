@@ -1,0 +1,10 @@
+import {z} from 'zod'
+
+export const FileSchema = z.instanceof(File, {message: 'Please upload a file.'})
+export const ImageSchema = FileSchema.refine(
+	(file) => file.size === 0 || file.type.startsWith('image/'),
+)
+
+export const providerIds = ['google'] as const
+export type ProviderId = (typeof providerIds)[number]
+export const ProvidersEnum = z.enum(providerIds)

@@ -1,11 +1,11 @@
 import type {Handle} from '@sveltejs/kit'
-import PocketBase from 'pocketbase'
-import type {TypedPocketBase} from '$lib/generated/pocketbase-types'
-import {PB_API_URL} from '$env/static/private'
-import {LivestreamsPocketbaseRepo} from '$lib/repos/livestreams/LivestreamsPocketbaseRepo'
+
+import {db} from '$lib/server/db/db'
+import {LivestreamsDbRepo} from '$lib/repos/livestreams/LivestreamsDbRepo'
+import {DbUsersRepo} from '$lib/repos/users/DbUsersRepo'
 
 export const dependencyInjectionHandle: Handle = async ({event, resolve}) => {
-	const pb = new PocketBase(PB_API_URL) as TypedPocketBase
-	event.locals.livestreamsRepo = new LivestreamsPocketbaseRepo(pb)
+	event.locals.usersRepo = new DbUsersRepo(db)
+	event.locals.livestreamsRepo = new LivestreamsDbRepo(db)
 	return resolve(event)
 }

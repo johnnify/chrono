@@ -10,7 +10,13 @@
 				".svelte-kit/**",
 				".vercel/**"
 			],
-			"env": ["MSW_ENABLED", "PB_API_URL", "PUBLIC_PB_API_URL"]
+			"env": [
+				"MSW_ENABLED",
+				"DB_URL",
+				"DB_AUTH_TOKEN",
+				"GOOGLE_CLIENT_ID",
+				"GOOGLE_CLIENT_SECRET"
+			]
 		},
 		"dev": {
 			"cache": false,

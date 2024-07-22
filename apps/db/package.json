@@ -1,0 +1,19 @@
+{
+	"name": "@repo/db",
+	"version": "0.0.1",
+	"private": true,
+	"scripts": {
+		"dev": "turso dev --db-file local.db"
+	},
+	"devDependencies": {
+		"turso": "^0.1.0"
+	},
+	"type": "module",
+	"packageManager": "pnpm@9.6.0",
+	"engines": {
+		"node": ">=20"
+	},
+	"volta": {
+		"node": "20.15.0"
+	}
+}

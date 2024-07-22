@@ -1,4 +1,5 @@
 <script lang="ts">
+	import {page} from '$app/stores'
 	import {Button} from '$lib/components/ui/button'
 	import MobileNav from './SideNav.svelte'
 	import ThemeToggleIcon from './ThemeToggleIcon.svelte'
@@ -13,12 +14,27 @@
 			Chrono
 		</Button>
 	</div>
-	<nav class="flex-none" aria-label="Header">
+	<nav
+		class="flex-none items-center gap-1 sm:flex sm:gap-2"
+		aria-label="Header"
+	>
+		{#if !$page.data.session}
+			<ul>
+				<li>
+					<Button variant="ghost" href="/login">login</Button>
+				</li>
+			</ul>
+		{/if}
 		<!-- Desktop nav -->
 		<ul class="hidden items-center gap-1 sm:flex sm:gap-2">
 			<li>
 				<Button variant="ghost" href="/livestreams">livestreams</Button>
 			</li>
+			{#if $page.data.session}
+				<li>
+					<Button variant="ghost" href="/profile">profile</Button>
+				</li>
+			{/if}
 			<li>
 				<Button variant="ghost" href="/about">about</Button>
 			</li>

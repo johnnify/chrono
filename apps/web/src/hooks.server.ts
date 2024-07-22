@@ -2,6 +2,8 @@ import {type Handle} from '@sveltejs/kit'
 import {sequence} from '@sveltejs/kit/hooks'
 import {MSW_ENABLED} from '$env/static/private'
 import {dependencyInjectionHandle} from './hooks/dependencyInjectionHandle'
+import {authHandle} from './hooks/authHandle'
+import {protectedRoutesHandle} from './hooks/protectedRoutesHandle'
 
 // Hijack server-side requests with Mock Service Worker
 // useful for local development and testing edge cases!
@@ -11,4 +13,8 @@ if (MSW_ENABLED === 'true') {
 	})
 }
 
-export const handle: Handle = sequence(dependencyInjectionHandle)
+export const handle: Handle = sequence(
+	authHandle,
+	protectedRoutesHandle,
+	dependencyInjectionHandle,
+)
