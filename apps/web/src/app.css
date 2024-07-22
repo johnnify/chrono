@@ -154,23 +154,19 @@
 
 	@media (prefers-reduced-motion: no-preference) {
 		:root::view-transition-old(body) {
-			pointer-events: none;
 			animation: 300ms ease-out both fade-out-to-left;
 		}
 
 		:root::view-transition-new(body) {
-			pointer-events: none;
 			animation: 300ms ease-out both slide-from-right;
 		}
 
 		/* "back" navigation */
 		:root[data-back]::view-transition-old(body) {
-			pointer-events: none;
 			animation: 300ms ease-out both fade-out-to-right;
 		}
 
 		:root[data-back]::view-transition-new(body) {
-			pointer-events: none;
 			animation: 300ms ease-out both slide-from-left;
 		}
 

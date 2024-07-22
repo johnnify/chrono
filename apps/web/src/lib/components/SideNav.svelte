@@ -15,6 +15,17 @@
 	})
 </script>
 
+{#snippet labelledBreak(label)}
+	<div class="relative">
+		<div class="absolute inset-0 flex items-center">
+			<span class="w-full border-t"></span>
+		</div>
+		<div class="relative flex justify-center text-xs uppercase">
+			<span class="bg-background text-muted-foreground px-2">{label}</span>
+		</div>
+	</div>
+{/snippet}
+
 <div class="sm:hidden">
 	<Sheet.Root bind:open={menuOpen}>
 		<Sheet.Trigger asChild let:builder>
@@ -31,15 +42,8 @@
 			<Sheet.Header class="mb-8">
 				<Sheet.Title>Navigation</Sheet.Title>
 			</Sheet.Header>
-			<div class="relative">
-				<div class="absolute inset-0 flex items-center">
-					<span class="w-full border-t"></span>
-				</div>
-				<div class="relative flex justify-center text-xs uppercase">
-					<span class="bg-background text-muted-foreground px-2">main</span>
-				</div>
-			</div>
-			<ul class="items-center gap-1 sm:flex sm:gap-2">
+			{@render labelledBreak('main')}
+			<ul class="grid gap-1 sm:gap-2">
 				<li>
 					<Button variant="ghost" href="/">Home</Button>
 				</li>
@@ -51,15 +55,21 @@
 				</li>
 			</ul>
 
-			<div class="relative">
-				<div class="absolute inset-0 flex items-center">
-					<span class="w-full border-t"></span>
-				</div>
-				<div class="relative flex justify-center text-xs uppercase">
-					<span class="bg-background text-muted-foreground px-2">legal</span>
-				</div>
-			</div>
-			<ul class="items-center gap-1 sm:flex sm:gap-2">
+			{@render labelledBreak('account')}
+			<ul class="grid gap-1 sm:gap-2">
+				{#if $page.data.session}
+					<li>
+						<Button variant="ghost" href="/profile">Profile</Button>
+					</li>
+				{:else}
+					<li>
+						<Button variant="ghost" href="/login">Login</Button>
+					</li>
+				{/if}
+			</ul>
+
+			{@render labelledBreak('legal')}
+			<ul class="grid gap-1 sm:gap-2">
 				<li>
 					<Button variant="ghost" href="/terms">Terms of Service</Button>
 				</li>
