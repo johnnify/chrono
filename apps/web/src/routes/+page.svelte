@@ -1,7 +1,7 @@
 <script lang="ts">
 	import PageTitle from '$lib/components/PageTitle.svelte'
-	import {Button} from '$lib/components/ui/button'
 	import Logo from '$lib/components/Logo.svelte'
+	import HeroButton from '$lib/components/HeroButton.svelte'
 </script>
 
 <main class="container flex grow flex-col gap-12">
@@ -16,6 +16,6 @@
 			<p>Livestream utilities for creators!</p>
 		</section>
 
-		<Button href="/livestreams">Start creating!</Button>
+		<HeroButton size="lg" href="/livestreams">Start creating!</HeroButton>
 	</section>
 </main>

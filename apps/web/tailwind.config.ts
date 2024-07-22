@@ -71,6 +71,22 @@ const config: Config = {
 				md: 'calc(var(--radius) - 2px)',
 				sm: 'calc(var(--radius) - 4px)',
 			},
+			animation: {
+				flip: 'flip 6s infinite steps(2, end)',
+				kitrotate: 'kitrotate 3s linear infinite both',
+			},
+			keyframes: {
+				flip: {
+					to: {
+						transform: 'rotate(360deg)',
+					},
+				},
+				kitrotate: {
+					to: {
+						transform: 'rotate(90deg)',
+					},
+				},
+			},
 		},
 	},
 	plugins: [containerQueries, typography],

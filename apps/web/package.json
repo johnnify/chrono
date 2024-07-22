@@ -20,10 +20,10 @@
 	},
 	"devDependencies": {
 		"@fontsource-variable/newsreader": "^5.0.19",
-		"@internationalized/date": "^3.5.4",
+		"@internationalized/date": "^3.5.5",
 		"@libsql/client": "^0.7.0",
 		"@lucia-auth/adapter-drizzle": "^1.0.7",
-		"@playwright/test": "^1.45.2",
+		"@playwright/test": "^1.45.3",
 		"@sveltejs/adapter-vercel": "^5.4.1",
 		"@sveltejs/enhanced-img": "^0.3.0",
 		"@sveltejs/kit": "^2.5.18",
