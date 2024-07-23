@@ -1,4 +1,6 @@
 <script lang="ts">
+	// Based on this example by @SikandarJODD
+	// https://animation-svelte.vercel.app/luxe/button-animated-border
 	import {cn} from '$lib/utils'
 	import {Button, type ButtonProps} from '$lib/components/ui/button'
 
