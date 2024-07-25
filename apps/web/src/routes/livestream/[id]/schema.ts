@@ -1,7 +1,7 @@
 import {z} from 'zod'
 
 export const labelAgendaItemSchema = z.object({
-	index: z.number().int().positive(),
+	index: z.number().int().min(0),
 	label: z.string().min(0).max(500),
 })
 

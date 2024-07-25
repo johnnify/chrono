@@ -1,12 +1,12 @@
 <script lang="ts">
-	import {Input} from '$lib/components/ui/input'
 	import {
 		superForm,
 		type Infer,
 		type SuperValidated,
 	} from 'sveltekit-superforms'
-	import {labelAgendaItemSchema, type LabelAgendaItemSchema} from './schema'
 	import {zodClient} from 'sveltekit-superforms/adapters'
+	import {labelAgendaItemSchema, type LabelAgendaItemSchema} from './schema'
+	import {Input} from '$lib/components/ui/input'
 
 	type Props = {
 		data: SuperValidated<Infer<LabelAgendaItemSchema>>
