@@ -6,7 +6,7 @@ import {
 } from '$lib/server/db/schema/livestreams'
 import {desc, eq} from 'drizzle-orm'
 import type {LivestreamsRepoInterface} from './LivestreamsRepoInterface'
-import {reduceAgendaEventsToAgenda} from './reduceAgendaEventsToAgenda'
+import {reduceAgendaEvents} from './reduceAgendaEvents'
 
 export class LivestreamsDbRepo implements LivestreamsRepoInterface {
 	#db: DrizzleDb
@@ -50,12 +50,13 @@ export class LivestreamsDbRepo implements LivestreamsRepoInterface {
 			[],
 		)
 
+		const {agenda} = reduceAgendaEvents(dbAgendaEvents)
 		const livestream = {
 			id: results[0].id,
 			title: results[0].title,
 			userId: results[0].userId,
 			createdAt: results[0].createdAt,
-			agenda: reduceAgendaEventsToAgenda(dbAgendaEvents),
+			agenda,
 		}
 
 		return livestream

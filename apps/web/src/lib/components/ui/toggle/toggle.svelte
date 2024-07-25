@@ -1,6 +1,6 @@
 <script lang="ts">
 	import {Toggle as TogglePrimitive} from 'bits-ui'
-	import {type Size, type Variant, toggleVariants} from './index.js'
+	import {type Size, type Variant, toggleVariants} from '.'
 	import {cn} from '$lib/utils'
 	import type {Snippet} from 'svelte'
 
