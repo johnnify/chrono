@@ -24,7 +24,7 @@
 		</Button>
 	</div>
 
-	<DescriptionSection description={null} />
+	<DescriptionSection description={data.livestream.description} />
 
 	<AgendaSection
 		agenda={data.livestream.agenda}

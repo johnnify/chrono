@@ -1,9 +1,9 @@
+import {redirect} from '@sveltejs/kit'
 import {fail, superValidate} from 'sveltekit-superforms'
 import {zod} from 'sveltekit-superforms/adapters'
 
-import type {PageServerLoad} from './$types'
-import {livestreamSchema} from './schema'
-import {redirect} from '@sveltejs/kit'
+import type {Actions, PageServerLoad} from './$types'
+import {livestreamSchema} from '../schema'
 
 export const load: PageServerLoad = async () => ({
 	form: await superValidate(zod(livestreamSchema)),
@@ -13,8 +13,8 @@ export const load: PageServerLoad = async () => ({
 	},
 })
 
-export const actions = {
-	async default({request, locals}) {
+export const actions: Actions = {
+	async create({request, locals}) {
 		const form = await superValidate(request, zod(livestreamSchema))
 
 		const userId = locals.user?.id
@@ -26,9 +26,9 @@ export const actions = {
 			return fail(400, {form})
 		}
 
-		const {title} = form.data
+		const {title, description} = form.data
 
-		const id = await locals.livestreamsRepo.create({userId, title})
+		const id = await locals.livestreamsRepo.create({userId, title, description})
 
 		redirect(307, `/livestream/${id}`)
 	},

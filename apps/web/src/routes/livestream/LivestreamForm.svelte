@@ -4,19 +4,30 @@
 		type Infer,
 		superForm,
 	} from 'sveltekit-superforms'
+	import {toast} from 'svelte-sonner'
 	import {zodClient} from 'sveltekit-superforms/adapters'
 	import Spinner from '$lib/components/icons/Spinner.svelte'
 	import * as Form from '$lib/components/ui/form'
 	import {Input} from '$lib/components/ui/input'
 	import {livestreamSchema, type LivestreamSchema} from './schema'
+	import {Textarea} from '$lib/components/ui/textarea'
+	import AiSuggestDescription from './AiSuggestDescription.svelte'
 
 	type Props = {
+		id?: string
 		data: SuperValidated<Infer<LivestreamSchema>>
 	}
-	let {data}: Props = $props()
+
+	let {id, data}: Props = $props()
 
 	const form = superForm(data, {
 		validators: zodClient(livestreamSchema),
+		resetForm: false,
+		onUpdated({form}) {
+			if (form.valid && form.message) {
+				toast.success(form.message.text)
+			}
+		},
 	})
 
 	const {
@@ -29,7 +40,7 @@
 	} = form
 </script>
 
-<form method="POST" use:enhance>
+<form method="POST" use:enhance action="?/{id ? 'update' : 'create'}">
 	<Form.Field {form} name="title">
 		<Form.Control let:attrs>
 			<Form.Label class="flex items-end gap-1">
@@ -46,11 +57,36 @@
 
 		<Form.FieldErrors />
 	</Form.Field>
+	<Form.Field {form} name="description">
+		<Form.Control let:attrs>
+			<div class="grid gap-2">
+				<Form.Label class="flex items-end gap-1">
+					Description
+					<Form.Description>
+						(YouTube will do some magic with this, according to whether you are
+						a partner!)
+					</Form.Description>
+				</Form.Label>
+				{#if id}
+					<AiSuggestDescription livestreamId={id} />
+				{/if}
+			</div>
+			<Textarea
+				{...attrs}
+				{...$constraints.description}
+				bind:value={$formData.description}
+				placeholder="Don’t forget to like 💜 subscribe!"
+				rows={10}
+			/>
+		</Form.Control>
+
+		<Form.FieldErrors />
+	</Form.Field>
 	<Form.Button class="w-24" disabled={!isTainted($tainted)}>
 		{#if $delayed}
 			<Spinner class="text-white" />
 		{:else}
-			Submit
+			Save
 		{/if}
 	</Form.Button>
 </form>

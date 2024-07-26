@@ -1,6 +1,7 @@
 export type Livestream = {
 	id: string
 	title: string
+	description: string | null
 	userId: string
 	createdAt: Date
 }
@@ -15,20 +16,35 @@ export type ChapterTimestamp = {
 	label: string
 }
 
-export type LivestreamWithAgenda = {
-	id: string
-	title: string
-	userId: string
-	createdAt: Date
+export type LivestreamWithAgenda = Livestream & {
 	agenda: AgendaItem[]
 	timestamps: ChapterTimestamp[]
 }
 
 export interface LivestreamsRepoInterface {
-	list(): Promise<{livestreams: Livestream[]}>
+	list(): Promise<{livestreams: Omit<Livestream, 'description'>[]}>
 	find(id: string): Promise<LivestreamWithAgenda | null>
 	// returns the ID of the newly created livestream
-	create({title, userId}: {title: string; userId: string}): Promise<string>
+	create({
+		title,
+		description,
+		userId,
+	}: {
+		title: string
+		description?: string | null
+		userId: string
+	}): Promise<string>
+	update({
+		id,
+		title,
+		description,
+		userId,
+	}: {
+		id: string
+		title: string
+		description?: string | null
+		userId: string
+	}): Promise<void>
 
 	createAgendaItem(livestreamId: string): Promise<void>
 	toggleAgendaItem(livestreamId: string, index: number): Promise<void>

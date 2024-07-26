@@ -12,6 +12,7 @@ export const livestreams = sqliteTable(
 			.notNull()
 			.references(() => users.id, {onDelete: 'cascade'}),
 		title: text('title').notNull(),
+		description: text('description'),
 		createdAt: integer('created_at', {mode: 'timestamp'})
 			.notNull()
 			.$defaultFn(() => new Date()),

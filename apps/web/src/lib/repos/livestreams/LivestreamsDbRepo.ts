@@ -4,7 +4,7 @@ import {
 	livestreams,
 	type SelectAgendaEvent,
 } from '$lib/server/db/schema/livestreams'
-import {desc, eq} from 'drizzle-orm'
+import {and, desc, eq} from 'drizzle-orm'
 import type {LivestreamsRepoInterface} from './LivestreamsRepoInterface'
 import {reduceAgendaEvents} from './reduceAgendaEvents'
 
@@ -29,6 +29,7 @@ export class LivestreamsDbRepo implements LivestreamsRepoInterface {
 			.select({
 				id: livestreams.id,
 				title: livestreams.title,
+				description: livestreams.description,
 				userId: livestreams.userId,
 				createdAt: livestreams.createdAt,
 				agendaEvent: {
@@ -56,6 +57,7 @@ export class LivestreamsDbRepo implements LivestreamsRepoInterface {
 		const livestream = {
 			id: results[0].id,
 			title: results[0].title,
+			description: results[0].description,
 			userId: results[0].userId,
 			createdAt: results[0].createdAt,
 			agenda,
@@ -65,13 +67,38 @@ export class LivestreamsDbRepo implements LivestreamsRepoInterface {
 		return livestream
 	}
 
-	create = async ({title, userId}: {title: string; userId: string}) => {
+	create = async ({
+		title,
+		description,
+		userId,
+	}: {
+		title: string
+		description?: string | null
+		userId: string
+	}) => {
 		const [{id}] = await this.#db
 			.insert(livestreams)
-			.values({title, userId})
+			.values({title, description, userId})
 			.returning({id: livestreams.id})
 
 		return id
+	}
+
+	update = async ({
+		id,
+		title,
+		description,
+		userId,
+	}: {
+		id: string
+		title: string
+		description?: string | null
+		userId: string
+	}) => {
+		await this.#db
+			.update(livestreams)
+			.set({title, description})
+			.where(and(eq(livestreams.id, id), eq(livestreams.userId, userId)))
 	}
 
 	createAgendaItem = async (livestreamId: string) => {

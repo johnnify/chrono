@@ -19,6 +19,8 @@
 		"db:migrate": "tsx -r 'dotenv-flow/config' drizzle/migrate.ts"
 	},
 	"devDependencies": {
+		"@ai-sdk/openai": "^0.0.40",
+		"@ai-sdk/svelte": "^0.0.23",
 		"@fontsource-variable/newsreader": "^5.0.19",
 		"@internationalized/date": "^3.5.5",
 		"@libsql/client": "^0.7.0",
@@ -31,6 +33,7 @@
 		"@tailwindcss/container-queries": "^0.1.1",
 		"@tailwindcss/typography": "^0.5.13",
 		"@types/node": "^20.14.12",
+		"ai": "^3.2.36",
 		"arctic": "^1.9.2",
 		"autoprefixer": "^10.4.19",
 		"bits-ui": "^0.21.12",
