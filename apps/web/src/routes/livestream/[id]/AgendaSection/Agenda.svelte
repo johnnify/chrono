@@ -1,12 +1,12 @@
 <script lang="ts">
+	import type {Infer, SuperValidated} from 'sveltekit-superforms'
 	import {enhance} from '$app/forms'
 	import Delete from '$lib/components/icons/Delete.svelte'
 	import Checkbox from '$lib/components/ui/checkbox/checkbox.svelte'
 	import * as Form from '$lib/components/ui/form'
 	import type {AgendaItem} from '$lib/repos/livestreams/LivestreamsRepoInterface'
-	import type {Infer, SuperValidated} from 'sveltekit-superforms'
 	import AgendaItemLabelForm from './AgendaItemLabelForm.svelte'
-	import type {LabelAgendaItemSchema} from './schema'
+	import type {LabelAgendaItemSchema} from '../schema'
 
 	type Props = {
 		agenda: AgendaItem[]

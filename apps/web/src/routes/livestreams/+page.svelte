@@ -1,12 +1,13 @@
 <script lang="ts">
 	import {Button} from '$lib/components/ui/button'
 	import PageTitle from '$lib/components/PageTitle.svelte'
+	import Plus from '$lib/components/icons/Plus.svelte'
 
 	let {data} = $props()
 </script>
 
-<main class="container">
-	<PageTitle class="text-foreground mb-6">Livestreams</PageTitle>
+<main class="container grid gap-6">
+	<PageTitle class="text-foreground">Livestreams</PageTitle>
 
 	{#if data.livestreams.length}
 		<ul>
@@ -22,7 +23,8 @@
 				</li>
 			{/each}
 		</ul>
-		<Button variant="outline" href="/livestream/new">
+		<Button class="place-self-start" variant="outline" href="/livestream/new">
+			<Plus class="mr-1 w-4" />
 			Create new livestream
 		</Button>
 	{:else}

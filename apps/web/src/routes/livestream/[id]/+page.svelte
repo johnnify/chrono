@@ -1,29 +1,33 @@
 <script lang="ts">
-	import {enhance} from '$app/forms'
-	import Plus from '$lib/components/icons/Plus.svelte'
+	import ChevronLeft from '$lib/components/icons/ChevronLeft.svelte'
+	import Pencil from '$lib/components/icons/Pencil.svelte'
 	import PageTitle from '$lib/components/PageTitle.svelte'
-	import SectionTitle from '$lib/components/SectionTitle.svelte'
-	import * as Form from '$lib/components/ui/form'
-	import Agenda from './Agenda.svelte'
+	import {Button} from '$lib/components/ui/button'
+	import AgendaSection from './AgendaSection/AgendaSection.svelte'
+	import DescriptionSection from './DescriptionSection.svelte'
 
 	let {data} = $props()
 </script>
 
 <main class="container flex grow flex-col gap-4">
-	<PageTitle class="mb-6 text-3xl">
+	<PageTitle class="text-3xl">
 		{data.livestream.title}
 	</PageTitle>
+	<div class="flex justify-between">
+		<Button variant="outline" href="/livestreams">
+			<ChevronLeft class="mr-1 w-4" />
+			Back
+		</Button>
+		<Button variant="outline" href="/livestream/{data.livestream.id}/edit">
+			<Pencil class="mr-1 w-3.5" />
+			Edit
+		</Button>
+	</div>
 
-	<SectionTitle class="text-foreground">Agenda</SectionTitle>
+	<DescriptionSection description={null} />
 
-	{#if data.livestream.agenda.length}
-		<Agenda
-			agenda={data.livestream.agenda}
-			agendaItemForms={data.labelAgendaItemForms}
-		/>
-	{/if}
-
-	<form method="POST" action="?/createAgendaItem" use:enhance>
-		<Form.Button><Plus class="mr-1 w-4" /> New item</Form.Button>
-	</form>
+	<AgendaSection
+		agenda={data.livestream.agenda}
+		agendaItemForms={data.labelAgendaItemForms}
+	/>
 </main>

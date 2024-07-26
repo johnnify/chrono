@@ -5,7 +5,7 @@
 		type SuperValidated,
 	} from 'sveltekit-superforms'
 	import {zodClient} from 'sveltekit-superforms/adapters'
-	import {labelAgendaItemSchema, type LabelAgendaItemSchema} from './schema'
+	import {labelAgendaItemSchema, type LabelAgendaItemSchema} from '../schema'
 	import {Input} from '$lib/components/ui/input'
 
 	type Props = {
