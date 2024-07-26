@@ -6,7 +6,11 @@ import {labelAgendaItemSchema} from '../schema'
 import {livestreamSchema} from '../../schema'
 
 export const load: PageServerLoad = async ({locals, params: {id}}) => {
-	const livestream = await locals.livestreamsRepo.find(id)
+	const userId = locals.user?.id
+	if (!userId) {
+		redirect(307, '/login')
+	}
+	const livestream = await locals.livestreamsRepo.find({id, userId})
 
 	if (!livestream) {
 		error(404, `Livestream ${id} not found`)

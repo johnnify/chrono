@@ -1,7 +1,15 @@
+import {redirect} from '@sveltejs/kit'
 import type {PageServerLoad} from './$types'
 
-export const load: PageServerLoad = async ({locals}) => {
-	const {livestreams} = await locals.livestreamsRepo.list()
+export const load: PageServerLoad = async ({
+	locals: {livestreamsRepo, user},
+}) => {
+	const userId = user?.id
+	if (!userId) {
+		redirect(307, '/login')
+	}
+
+	const {livestreams} = await livestreamsRepo.list(userId)
 
 	return {
 		livestreams,

@@ -22,8 +22,16 @@ export type LivestreamWithAgenda = Livestream & {
 }
 
 export interface LivestreamsRepoInterface {
-	list(): Promise<{livestreams: Omit<Livestream, 'description'>[]}>
-	find(id: string): Promise<LivestreamWithAgenda | null>
+	list(
+		userId: string,
+	): Promise<{livestreams: Omit<Livestream, 'description'>[]}>
+	find({
+		id,
+		userId,
+	}: {
+		id: string
+		userId?: string
+	}): Promise<LivestreamWithAgenda | null>
 	// returns the ID of the newly created livestream
 	create({
 		title,

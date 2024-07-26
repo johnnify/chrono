@@ -15,16 +15,21 @@ export class LivestreamsDbRepo implements LivestreamsRepoInterface {
 		this.#db = db
 	}
 
-	list = async () => {
+	list = async (userId: string) => {
 		const dbLivestreams = await this.#db
 			.select()
 			.from(livestreams)
+			.where(eq(livestreams.userId, userId))
 			.orderBy(desc(livestreams.createdAt))
 
 		return {livestreams: dbLivestreams}
 	}
 
-	find = async (id: string) => {
+	find = async ({id, userId}: {id: string; userId?: string}) => {
+		const whereFilters = [eq(livestreams.id, id)]
+		if (userId) {
+			whereFilters.push(eq(livestreams.userId, userId))
+		}
 		const results = await this.#db
 			.select({
 				id: livestreams.id,
@@ -38,7 +43,7 @@ export class LivestreamsDbRepo implements LivestreamsRepoInterface {
 				},
 			})
 			.from(livestreams)
-			.where(eq(livestreams.id, id))
+			.where(and(...whereFilters))
 			.leftJoin(agendaEvents, eq(livestreams.id, agendaEvents.livestreamId))
 			.orderBy(agendaEvents.createdAt)
 
