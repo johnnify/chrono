@@ -10,12 +10,18 @@ export type AgendaItem = {
 	isDone: boolean
 }
 
+export type ChapterTimestamp = {
+	timestamp: string
+	label: string
+}
+
 export type LivestreamWithAgenda = {
 	id: string
 	title: string
 	userId: string
 	createdAt: Date
 	agenda: AgendaItem[]
+	timestamps: ChapterTimestamp[]
 }
 
 export interface LivestreamsRepoInterface {

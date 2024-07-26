@@ -2,7 +2,7 @@ import type {DrizzleDb} from '$lib/server/db/db'
 import {
 	agendaEvents,
 	livestreams,
-	type AgendaEventPayload,
+	type SelectAgendaEvent,
 } from '$lib/server/db/schema/livestreams'
 import {desc, eq} from 'drizzle-orm'
 import type {LivestreamsRepoInterface} from './LivestreamsRepoInterface'
@@ -31,7 +31,10 @@ export class LivestreamsDbRepo implements LivestreamsRepoInterface {
 				title: livestreams.title,
 				userId: livestreams.userId,
 				createdAt: livestreams.createdAt,
-				agendaEvent: agendaEvents.payload,
+				agendaEvent: {
+					createdAt: agendaEvents.createdAt,
+					payload: agendaEvents.payload,
+				},
 			})
 			.from(livestreams)
 			.where(eq(livestreams.id, id))
@@ -40,23 +43,23 @@ export class LivestreamsDbRepo implements LivestreamsRepoInterface {
 
 		if (!results.length) return null
 
-		const dbAgendaEvents = results.reduce<AgendaEventPayload[]>(
-			(acc, {agendaEvent}) => {
-				if (agendaEvent) {
-					acc.push(agendaEvent)
-				}
-				return acc
-			},
-			[],
-		)
+		const dbAgendaEvents = results.reduce<
+			Pick<SelectAgendaEvent, 'createdAt' | 'payload'>[]
+		>((acc, {agendaEvent}) => {
+			if (agendaEvent) {
+				acc.push(agendaEvent)
+			}
+			return acc
+		}, [])
 
-		const {agenda} = reduceAgendaEvents(dbAgendaEvents)
+		const {agenda, timestamps} = reduceAgendaEvents(dbAgendaEvents)
 		const livestream = {
 			id: results[0].id,
 			title: results[0].title,
 			userId: results[0].userId,
 			createdAt: results[0].createdAt,
 			agenda,
+			timestamps,
 		}
 
 		return livestream
