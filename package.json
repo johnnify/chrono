@@ -13,23 +13,24 @@
 		"update": "ncu -uiws --root --format group --install always"
 	},
 	"devDependencies": {
-		"eslint": "^9.7.0",
+		"eslint": "^9.9.0",
 		"eslint-config-prettier": "^9.1.0",
-		"eslint-config-turbo": "^2.0.9",
+		"eslint-config-turbo": "^2.0.14",
 		"eslint-plugin-only-warn": "^1.1.0",
-		"npm-check-updates": "^16.14.20",
+		"npm-check-updates": "^17.1.0",
+		"globals": "^15.9.0",
 		"prettier": "^3.3.3",
 		"prettier-plugin-svelte": "^3.2.6",
-		"prettier-plugin-tailwindcss": "^0.6.5",
-		"turbo": "^2.0.9",
-		"typescript-eslint": "^7.17.0"
+		"prettier-plugin-tailwindcss": "^0.6.6",
+		"turbo": "^2.0.14",
+		"typescript-eslint": "^8.2.0"
 	},
 	"packageManager": "pnpm@9.6.0",
 	"engines": {
 		"node": ">=20"
 	},
 	"volta": {
-		"node": "20.15.0"
+		"node": "20.17.0"
 	},
 	"trustedDependencies": [
 		"@sveltejs/kit",
