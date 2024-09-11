@@ -17,6 +17,9 @@ const config = {
 		// https://github.com/huntabyte/bits-ui/issues/287
 		// runes: true,
 	},
+	vitePlugin: {
+		inspector: true,
+	},
 }
 
 export default config
