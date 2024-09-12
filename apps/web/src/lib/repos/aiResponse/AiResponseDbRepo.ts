@@ -16,11 +16,13 @@ export class AiResponseDbRepo implements AiResponseRepoInterface {
 	}
 
 	suggest = async (livestream: {title: string; agenda: {label: string}[]}) => {
-		const prompt = `Suggest a YouTube description based on the following agenda for the YouTube livestream${livestream.title ? `titled “${livestream.title}”` : ''}
+		const prompt = `Suggest a few YouTube descriptions based on the following agenda for the YouTube livestream${livestream.title ? `titled “${livestream.title}”` : ''}
 	${livestream.agenda.map(({label}) => `- ${label}`).join('\n')}
 
 	Consider that YouTube descriptions have to lead with the most important thing, be in plain text.
-	Do not use markdown, just plain text. Do not use hashtags.`
+	Do not use markdown, just plain text. Do not use hashtags.
+	You do not need to use all of the agenda items, or their exact wording, your job is to make something accurate, but appealing to potential viewers.
+	`
 
 		const [result] = await this.#db
 			.select({response: cachedAiResponses.response})
