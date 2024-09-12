@@ -26,57 +26,6 @@ export const livestreams = sqliteTable(
 export type SelectLivestream = typeof livestreams.$inferSelect
 export type InsertLivestream = typeof livestreams.$inferInsert
 
-export type AgendaEventType = 'create' | 'toggle' | 'delete' | 'label'
-
-export type AgendaEventPayload =
-	| {
-			type: 'create'
-	  }
-	| {
-			type: 'toggle'
-			data: {
-				index: number
-			}
-	  }
-	| {
-			type: 'delete'
-			data: {
-				index: number
-			}
-	  }
-	| {
-			type: 'label'
-			data: {
-				index: number
-				label: string
-			}
-	  }
-
-export const agendaEvents = sqliteTable(
-	'agenda_events',
-	{
-		id: text('id')
-			.notNull()
-			.primaryKey()
-			.$defaultFn(() => crypto.randomUUID()),
-		livestreamId: text('livestream_id')
-			.notNull()
-			.references(() => livestreams.id, {onDelete: 'cascade'}),
-		payload: text('payload', {mode: 'json'})
-			.$type<AgendaEventPayload>()
-			.notNull(),
-		createdAt: integer('created_at', {mode: 'timestamp'})
-			.notNull()
-			.$defaultFn(() => new Date()),
-	},
-	(table) => ({
-		createdAtIdx: index('agenda_events_created_at_index').on(table.createdAt),
-	}),
-)
-
-export type SelectAgendaEvent = typeof agendaEvents.$inferSelect
-export type InsertAgendaEvent = typeof agendaEvents.$inferInsert
-
 export const agendaItems = sqliteTable(
 	'agenda_items',
 	{

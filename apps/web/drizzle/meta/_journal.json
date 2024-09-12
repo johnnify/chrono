@@ -43,6 +43,13 @@
 			"when": 1726152992911,
 			"tag": "0005_shiny_wild_child",
 			"breakpoints": true
+		},
+		{
+			"idx": 6,
+			"version": "6",
+			"when": 1726163094368,
+			"tag": "0006_lively_the_fallen",
+			"breakpoints": true
 		}
 	]
 }
