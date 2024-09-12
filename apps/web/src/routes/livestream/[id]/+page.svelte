@@ -28,6 +28,6 @@
 
 	<AgendaSection
 		agenda={data.livestream.agenda}
-		agendaItemForms={data.labelAgendaItemForms}
+		agendaItemForms={data.updateAgendaItemForms}
 	/>
 </main>

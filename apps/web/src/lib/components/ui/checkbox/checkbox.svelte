@@ -7,6 +7,7 @@
 	let {
 		class: className = '',
 		checked = $bindable(),
+		value = $bindable(),
 		...restProps
 	}: CheckboxPrimitive.Props = $props()
 </script>
@@ -17,6 +18,7 @@
 		className,
 	)}
 	bind:checked
+	bind:value
 	{...restProps}
 >
 	<CheckboxPrimitive.Indicator

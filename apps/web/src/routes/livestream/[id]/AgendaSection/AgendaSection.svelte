@@ -6,11 +6,11 @@
 	import * as Form from '$lib/components/ui/form'
 	import type {AgendaItem} from '$lib/repos/livestreams/LivestreamsRepoInterface'
 	import Agenda from './Agenda.svelte'
-	import type {LabelAgendaItemSchema} from '../schema'
+	import type {UpdateAgendaItemSchema} from '../schema'
 
 	type Props = {
 		agenda: AgendaItem[]
-		agendaItemForms: SuperValidated<Infer<LabelAgendaItemSchema>>[]
+		agendaItemForms: SuperValidated<Infer<UpdateAgendaItemSchema>>[]
 	}
 	let {agenda, agendaItemForms}: Props = $props()
 </script>

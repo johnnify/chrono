@@ -1,12 +1,10 @@
 import type {DrizzleDb} from '$lib/server/db/db'
-import {
-	agendaEvents,
-	livestreams,
-	type SelectAgendaEvent,
-} from '$lib/server/db/schema/livestreams'
+import {agendaItems, livestreams} from '$lib/server/db/schema/livestreams'
 import {and, desc, eq} from 'drizzle-orm'
-import type {LivestreamsRepoInterface} from './LivestreamsRepoInterface'
-import {reduceAgendaEvents} from './reduceAgendaEvents'
+import type {
+	AgendaItem,
+	LivestreamsRepoInterface,
+} from './LivestreamsRepoInterface'
 
 export class LivestreamsDbRepo implements LivestreamsRepoInterface {
 	#db: DrizzleDb
@@ -30,46 +28,45 @@ export class LivestreamsDbRepo implements LivestreamsRepoInterface {
 		if (userId) {
 			whereFilters.push(eq(livestreams.userId, userId))
 		}
-		const results = await this.#db
+		const [livestream, ...agendaItemRows] = await this.#db
 			.select({
 				id: livestreams.id,
 				title: livestreams.title,
 				description: livestreams.description,
 				userId: livestreams.userId,
 				createdAt: livestreams.createdAt,
-				agendaEvent: {
-					createdAt: agendaEvents.createdAt,
-					payload: agendaEvents.payload,
+				agendaItem: {
+					id: agendaItems.id,
+					label: agendaItems.label,
+					status: agendaItems.status,
+					streamTimestamp: agendaItems.streamTimestamp,
 				},
 			})
 			.from(livestreams)
 			.where(and(...whereFilters))
-			.leftJoin(agendaEvents, eq(livestreams.id, agendaEvents.livestreamId))
-			.orderBy(agendaEvents.createdAt)
+			.leftJoin(agendaItems, eq(livestreams.id, agendaItems.livestreamId))
+			.orderBy(agendaItems.order)
 
-		if (!results.length) return null
+		if (!livestream) return null
 
-		const dbAgendaEvents = results.reduce<
-			Pick<SelectAgendaEvent, 'createdAt' | 'payload'>[]
-		>((acc, {agendaEvent}) => {
-			if (agendaEvent) {
-				acc.push(agendaEvent)
-			}
-			return acc
-		}, [])
+		const dbAgendaItems = agendaItemRows.reduce<AgendaItem[]>(
+			(acc, {agendaItem}) => {
+				if (agendaItem) {
+					acc.push(agendaItem)
+				}
+				return acc
+			},
+			[],
+		)
 
-		const {agenda, timestamps} = reduceAgendaEvents(dbAgendaEvents)
-		const livestream = {
-			id: results[0].id,
-			title: results[0].title,
-			description: results[0].description,
-			userId: results[0].userId,
-			createdAt: results[0].createdAt,
-			agenda,
-			timestamps,
+		return {
+			id: livestream.id,
+			title: livestream.title,
+			description: livestream.description,
+			userId: livestream.userId,
+			createdAt: livestream.createdAt,
+			agenda: dbAgendaItems,
 		}
-
-		return livestream
 	}
 
 	create = async ({
@@ -106,31 +103,63 @@ export class LivestreamsDbRepo implements LivestreamsRepoInterface {
 			.where(and(eq(livestreams.id, id), eq(livestreams.userId, userId)))
 	}
 
-	createAgendaItem = async (livestreamId: string) => {
-		await this.#db.insert(agendaEvents).values({
-			livestreamId,
-			payload: {type: 'create'},
-		})
+	createAgendaItem = async (livestreamId: string, userId: string) => {
+		const [livestream] = await this.#db
+			.select({id: livestreams.id})
+			.from(livestreams)
+			.where(
+				and(eq(livestreams.id, livestreamId), eq(livestreams.userId, userId)),
+			)
+		if (!livestream) {
+			throw new Error(`no livestream with ${livestreamId} for user `)
+		}
+		const [lastExistingAgendaItem] = await this.#db
+			.select({order: agendaItems.order})
+			.from(agendaItems)
+			.where(eq(agendaItems.livestreamId, livestreamId))
+			.orderBy(desc(agendaItems.order))
+			.limit(1)
+
+		const [{id}] = await this.#db
+			.insert(agendaItems)
+			.values({
+				livestreamId,
+				order: lastExistingAgendaItem ? lastExistingAgendaItem.order + 1 : 0,
+			})
+			.returning({id: agendaItems.id})
+
+		return id
 	}
-	toggleAgendaItem = async (livestreamId: string, index: number) => {
-		await this.#db.insert(agendaEvents).values({
-			livestreamId,
-			payload: {type: 'toggle', data: {index}},
-		})
-	}
-	deleteAgendaItem = async (livestreamId: string, index: number) => {
-		await this.#db.insert(agendaEvents).values({
-			livestreamId,
-			payload: {type: 'delete', data: {index}},
-		})
-	}
-	labelAgendaItem = async (
-		livestreamId: string,
-		{index, label}: {index: number; label: string},
+	updateAgendaItem = async (
+		id: string,
+		partial: Partial<Omit<AgendaItem, 'id'>>,
+		userId: string,
 	) => {
-		await this.#db.insert(agendaEvents).values({
-			livestreamId,
-			payload: {type: 'label', data: {index, label}},
-		})
+		const [agendaItem] = await this.#db
+			.select({id: agendaItems.id})
+			.from(agendaItems)
+			.innerJoin(livestreams, eq(agendaItems.livestreamId, livestreams.id))
+			.where(and(eq(agendaItems.id, id), eq(livestreams.userId, userId)))
+		if (!agendaItem) {
+			throw new Error(`no agenda item with ${id} for user `)
+		}
+
+		await this.#db
+			.update(agendaItems)
+			.set(partial)
+			.where(eq(agendaItems.id, id))
+	}
+	deleteAgendaItem = async (id: string, userId: string) => {
+		const [agendaItem] = await this.#db
+			.select({id: agendaItems.id})
+			.from(agendaItems)
+			.innerJoin(livestreams, eq(agendaItems.livestreamId, livestreams.id))
+			.where(and(eq(agendaItems.id, id), eq(livestreams.userId, userId)))
+
+		if (!agendaItem) {
+			throw new Error(`no agenda item with ${id} for user `)
+		}
+
+		await this.#db.delete(agendaItems).where(eq(agendaItems.id, id))
 	}
 }

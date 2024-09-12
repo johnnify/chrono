@@ -6,19 +6,23 @@ export type Livestream = {
 	createdAt: Date
 }
 
-export type AgendaItem = {
-	label: string
-	isDone: boolean
-}
+export const agendaItemStatuses = [
+	'pending',
+	'started',
+	'bailed',
+	'done',
+] as const
+export type AgendaItemStatus = (typeof agendaItemStatuses)[number]
 
-export type ChapterTimestamp = {
-	timestamp: string
+export type AgendaItem = {
+	id: string
 	label: string
+	status: AgendaItemStatus
+	streamTimestamp: string | null
 }
 
 export type LivestreamWithAgenda = Livestream & {
 	agenda: AgendaItem[]
-	timestamps: ChapterTimestamp[]
 }
 
 export interface LivestreamsRepoInterface {
@@ -54,11 +58,12 @@ export interface LivestreamsRepoInterface {
 		userId: string
 	}): Promise<void>
 
-	createAgendaItem(livestreamId: string): Promise<void>
-	toggleAgendaItem(livestreamId: string, index: number): Promise<void>
-	deleteAgendaItem(livestreamId: string, index: number): Promise<void>
-	labelAgendaItem(
-		livestreamId: string,
-		{index, label}: {index: number; label: string},
+	// returns the ID of the newly created agenda item
+	createAgendaItem(livestreamId: string, userId: string): Promise<string>
+	updateAgendaItem(
+		id: string,
+		partial: Partial<Omit<AgendaItem, 'id'>>,
+		userId: string,
 	): Promise<void>
+	deleteAgendaItem(id: string, userId: string): Promise<void>
 }

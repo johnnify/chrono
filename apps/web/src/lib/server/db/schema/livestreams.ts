@@ -1,5 +1,6 @@
 import {index, integer, sqliteTable, text} from 'drizzle-orm/sqlite-core'
 import {users} from './auth'
+import {agendaItemStatuses} from '../../../repos/livestreams/LivestreamsRepoInterface'
 
 export const livestreams = sqliteTable(
 	'livestreams',
@@ -18,9 +19,7 @@ export const livestreams = sqliteTable(
 			.$defaultFn(() => new Date()),
 	},
 	(table) => ({
-		createdAtIdx: index(`created_at_idx_${crypto.randomUUID()}`).on(
-			table.createdAt,
-		),
+		createdAtIdx: index('livestreams_created_at_index').on(table.createdAt),
 	}),
 )
 
@@ -71,11 +70,38 @@ export const agendaEvents = sqliteTable(
 			.$defaultFn(() => new Date()),
 	},
 	(table) => ({
-		createdAtIdx: index(`created_at_idx_${crypto.randomUUID()}`).on(
-			table.createdAt,
-		),
+		createdAtIdx: index('agenda_events_created_at_index').on(table.createdAt),
 	}),
 )
 
 export type SelectAgendaEvent = typeof agendaEvents.$inferSelect
 export type InsertAgendaEvent = typeof agendaEvents.$inferInsert
+
+export const agendaItems = sqliteTable(
+	'agenda_items',
+	{
+		id: text('id')
+			.notNull()
+			.primaryKey()
+			.$defaultFn(() => crypto.randomUUID()),
+		livestreamId: text('livestream_id')
+			.notNull()
+			.references(() => livestreams.id, {onDelete: 'cascade'}),
+		label: text('label').notNull().default(''),
+		status: text('status', {enum: agendaItemStatuses})
+			.notNull()
+			.default('pending'),
+		startedAt: integer('started_at', {mode: 'timestamp'}),
+		streamTimestamp: text('stream_timestamp'),
+		order: integer('order').notNull().default(0),
+		createdAt: integer('created_at', {mode: 'timestamp'})
+			.notNull()
+			.$defaultFn(() => new Date()),
+	},
+	(table) => ({
+		orderIndex: index('agenda_item_order_index').on(table.order),
+	}),
+)
+
+export type SelectAgendaItem = typeof agendaItems.$inferSelect
+export type InsertAgendaItem = typeof agendaItems.$inferInsert
