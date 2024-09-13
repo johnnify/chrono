@@ -11,3 +11,13 @@ export const cachedAiResponses = sqliteTable('cached_ai_responses', {
 		.notNull()
 		.$defaultFn(() => new Date()),
 })
+
+export const cachedGeneratedImages = sqliteTable('cached_generated_images', {
+	prompt: text('prompt').notNull().primaryKey(),
+	response: text('response', {mode: 'json'})
+		.$type<{imageUrls: string[]}>()
+		.notNull(),
+	createdAt: integer('created_at', {mode: 'timestamp'})
+		.notNull()
+		.$defaultFn(() => new Date()),
+})

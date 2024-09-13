@@ -5,4 +5,9 @@ export interface AiResponseRepoInterface {
 		title: string
 		agenda: {label: string}[]
 	}): Promise<SuggestionsResponseSchema>
+	suggestThumbnails(livestream: {
+		title: string
+		description: string | null
+		agenda: {label: string}[]
+	}): Promise<string[]>
 }

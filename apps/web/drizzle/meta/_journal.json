@@ -50,6 +50,13 @@
 			"when": 1726163094368,
 			"tag": "0006_lively_the_fallen",
 			"breakpoints": true
+		},
+		{
+			"idx": 7,
+			"version": "6",
+			"when": 1726234031088,
+			"tag": "0007_daffy_caretaker",
+			"breakpoints": true
 		}
 	]
 }
