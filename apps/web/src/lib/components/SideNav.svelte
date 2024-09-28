@@ -15,7 +15,7 @@
 	})
 </script>
 
-{#snippet labelledBreak(label)}
+{#snippet labelledBreak(label: string)}
 	<div class="relative">
 		<div class="absolute inset-0 flex items-center">
 			<span class="w-full border-t"></span>
@@ -38,7 +38,7 @@
 				<AnimatedHamburger open={menuOpen} />
 			</Button>
 		</Sheet.Trigger>
-		<Sheet.Content side="right" class="z-50">
+		<Sheet.Content side="right" class="content z-50">
 			<Sheet.Header class="mb-8">
 				<Sheet.Title>Navigation</Sheet.Title>
 			</Sheet.Header>
@@ -82,7 +82,7 @@
 </div>
 
 <style lang="postcss">
-	div {
+	.content {
 		view-transition-name: side-nav;
 	}
 </style>

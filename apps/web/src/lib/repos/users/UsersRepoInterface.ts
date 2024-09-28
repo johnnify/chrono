@@ -1,7 +1,8 @@
 import type {ProviderId} from '$lib/schemas'
-import type {SelectUser} from '$lib/server/db/schema/auth'
+import type {InsertUser, SelectUser} from '$lib/server/db/schema/auth'
 
 export type User = SelectUser
+export type NewUser = InsertUser
 
 export type Provider = {
 	providerId: ProviderId
@@ -18,7 +19,7 @@ export interface UsersRepoInterface {
 	findByVerificationCode(code: string): Promise<string | null>
 
 	// returns the new user's id
-	createUser(user: Omit<User, 'id'>, provider?: Provider): Promise<string>
+	createUser(user: NewUser, provider?: Provider): Promise<string>
 
 	addProviderToUser(userId: string, provider: Provider): Promise<void>
 

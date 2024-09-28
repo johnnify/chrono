@@ -19,7 +19,7 @@
 			<span class="sr-only">Johnny’s YouTube channel</span>
 			<YouTubeIcon class="w-5" />
 		</OutboundLink>
-		<OutboundLink href="https://github.com/jmagrippis/chrono">
+		<OutboundLink href="https://github.com/johnnify/chrono">
 			<span class="sr-only">checkout the source code at the github repo</span>
 			<GitHubIcon class="w-5" />
 		</OutboundLink>

@@ -17,9 +17,13 @@ export const livestreams = sqliteTable(
 		createdAt: integer('created_at', {mode: 'timestamp'})
 			.notNull()
 			.$defaultFn(() => new Date()),
+		publishedAt: integer('published_at', {mode: 'timestamp'}),
 	},
 	(table) => ({
 		createdAtIdx: index('livestreams_created_at_index').on(table.createdAt),
+		publishedAtIdx: index('livestreams_published_at_index').on(
+			table.publishedAt,
+		),
 	}),
 )
 

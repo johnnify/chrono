@@ -14,6 +14,7 @@ export const users = sqliteTable('users', {
 	emailVerified: integer('email_verified', {mode: 'boolean'})
 		.notNull()
 		.default(false),
+	passwordHash: text('password_hash'),
 })
 
 export type SelectUser = typeof users.$inferSelect

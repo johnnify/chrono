@@ -25,7 +25,7 @@ This [Turborepo](https://turbo.build/repo/docs) includes the following packages/
 
 Most actions can and should be run from the root of the repository, thanks to Turborepo and as specified in [turbo.json](https://turbo.build/repo/docs/reference/configuration).
 
-`pnpm i` & `pnpm dev` will get you there, but only after you've created your own `.env`, and given Docker permissions to mount directories inside `./apps/pb` as volumes!
+`pnpm i` & `pnpm dev` will get you there, but only after you've created your own `.env`!
 
 ### Install dependencies
 
