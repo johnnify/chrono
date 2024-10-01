@@ -46,7 +46,9 @@
 
 	$effect(() => {
 		return () => {
-			completionDelayedTimeout && clearTimeout(completionDelayedTimeout)
+			if (completionDelayedTimeout) {
+				clearTimeout(completionDelayedTimeout)
+			}
 		}
 	})
 </script>

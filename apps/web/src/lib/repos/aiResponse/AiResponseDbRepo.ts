@@ -3,7 +3,7 @@ import type {OpenAIProvider} from '@ai-sdk/openai'
 import {eq} from 'drizzle-orm'
 import type {DrizzleDb} from '$lib/server/db/db'
 import type {AiResponseRepoInterface} from './AiResponseRepoInterface'
-import {suggestionsSchema, type SuggestionsResponseSchema} from './schema'
+import {suggestionsSchema} from './schema'
 import {
 	cachedAiResponses,
 	cachedGeneratedImages,

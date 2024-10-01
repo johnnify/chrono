@@ -6,7 +6,6 @@
 	type Props = SheetPrimitive.OverlayProps
 
 	let {
-		children,
 		class: className = '',
 		transition = fade,
 		transitionConfig = {

@@ -55,11 +55,12 @@
 			}
 
 			return new Promise((resolve) => {
-				document.startViewTransition &&
+				if (document.startViewTransition) {
 					document.startViewTransition(async () => {
 						resolve()
 						await navigation.complete
 					})
+				}
 			})
 		}
 	})

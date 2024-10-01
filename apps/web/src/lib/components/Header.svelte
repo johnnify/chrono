@@ -44,7 +44,9 @@
 		variant="ghost"
 		size="icon"
 		onclick={() => {
-			window.toggleTheme && window.toggleTheme()
+			if (window.toggleTheme) {
+				window.toggleTheme()
+			}
 		}}
 		class="active:translate-y-0"
 	>

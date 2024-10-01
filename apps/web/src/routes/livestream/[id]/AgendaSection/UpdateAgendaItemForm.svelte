@@ -29,7 +29,9 @@
 
 	$effect(() => {
 		return () => {
-			timeout && clearTimeout(timeout)
+			if (timeout) {
+				clearTimeout(timeout)
+			}
 		}
 	})
 </script>
@@ -48,7 +50,9 @@
 		onCheckedChange={(isChecked) => {
 			$formData.status = isChecked ? 'done' : 'pending'
 
-			timeout && clearTimeout(timeout)
+			if (timeout) {
+				clearTimeout(timeout)
+			}
 
 			// Little buffer against a twitchy toggle
 			timeout = setTimeout(() => {
@@ -73,7 +77,9 @@
 		}}
 		autofocus={isBeingEdited ? true : undefined}
 		oninput={() => {
-			timeout && clearTimeout(timeout)
+			if (timeout) {
+				clearTimeout(timeout)
+			}
 
 			timeout = setTimeout(() => {
 				submit()

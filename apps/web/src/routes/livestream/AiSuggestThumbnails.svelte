@@ -48,7 +48,9 @@
 
 	$effect(() => {
 		return () => {
-			generationDelayedTimeout && clearTimeout(generationDelayedTimeout)
+			if (generationDelayedTimeout) {
+				clearTimeout(generationDelayedTimeout)
+			}
 		}
 	})
 </script>
