@@ -80,9 +80,3 @@
 		</Sheet.Content>
 	</Sheet.Root>
 </div>
-
-<style lang="postcss">
-	.content {
-		view-transition-name: side-nav;
-	}
-</style>
