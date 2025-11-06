@@ -31,7 +31,7 @@
 			</p>
 		</div>
 		<div class="grid gap-4">
-			<Button href="/upload" size="lg">Get started!</Button>
+			<Button href="/timestamps" size="lg">Get started!</Button>
 		</div>
 	</div>
 	<div

@@ -48,9 +48,9 @@
 			{@render titledLineBreak('main')}
 			<ul class="items-center gap-1 pl-2">
 				<li>
-					<Button variant="ghost" href="/upload">
+					<Button variant="ghost" href="/timestamps">
 						<UploadIcon />
-						Upload
+						Timestamps
 					</Button>
 				</li>
 			</ul>

@@ -2,7 +2,7 @@
 	import {setTheme, setMode, theme} from 'mode-watcher'
 	import AppIcon from '~icons/mdi/clock-outline'
 	import LoginIcon from '~icons/mdi/login'
-	import UploadIcon from '~icons/material-symbols/upload'
+	import TimestampsIcon from '~icons/hugeicons/csv-01'
 	import UserCircle from '~icons/mdi/user-circle-outline'
 
 	import {page} from '$app/state'
@@ -31,9 +31,9 @@
 	</div>
 
 	<nav aria-label="Header" class="flex">
-		<Button class="hidden sm:flex" variant="ghost" href="/upload">
-			<UploadIcon />
-			Upload
+		<Button class="hidden sm:flex" variant="ghost" href="/timestamps">
+			<TimestampsIcon />
+			Timestamps
 		</Button>
 
 		{#if page.data.user}
