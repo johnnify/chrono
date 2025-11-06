@@ -1,14 +1,23 @@
-import {and, eq} from 'drizzle-orm'
-import {createDate, isWithinExpirationDate, TimeSpan} from 'oslo'
-
+import {sha256} from '@oslojs/crypto/sha2'
+import {encodeHexLowerCase} from '@oslojs/encoding'
+import {eq, and} from 'drizzle-orm'
 import {
-	providersToUsers,
-	users,
-	verificationCodes,
+	type DrizzleDb,
+	type AuthProviderId,
 	type InsertUser,
-} from '$lib/server/db/schema/auth'
-import type {Provider, User, UsersRepoInterface} from './UsersRepoInterface'
-import type {DrizzleDb} from '$lib/server/db/db'
+	type Session,
+	type InsertUserProvider,
+	users,
+	sessions,
+	usersProviders,
+} from '@repo/db'
+import type {
+	NewOrExistingUser,
+	SessionValidationResult,
+	UsersRepoInterface,
+} from './UsersRepoInterface'
+
+const DAY_IN_MS = 1000 * 60 * 60 * 24
 
 export class DbUsersRepo implements UsersRepoInterface {
 	#db: DrizzleDb
@@ -17,120 +26,177 @@ export class DbUsersRepo implements UsersRepoInterface {
 		this.#db = db
 	}
 
-	async findById(id: string) {
-		const [result] = await this.#db
-			.select()
-			.from(users)
-			.where(eq(users.id, id))
-			.limit(1)
+	upsertUser = async (user: NewOrExistingUser): Promise<string> => {
+		const update: InsertUser = {
+			name: user.name,
+			email: user.email,
+		}
 
-		return result
+		const [dbUser] = await this.#db
+			.insert(users)
+			.values({...user})
+			.onConflictDoUpdate({
+				target: users.id,
+				set: update,
+			})
+			.returning({id: users.id})
+
+		return dbUser.id
 	}
 
-	async findByProvider(provider: Provider) {
-		const [result] = await this.#db
-			.select({userId: providersToUsers.userId})
-			.from(providersToUsers)
+	upsertOAuthUser = async ({
+		provider,
+		providerUserId,
+		user,
+	}: {
+		provider: AuthProviderId
+		providerUserId: string
+		user: {
+			name: string
+			email: string | null
+			avatarUrl?: string | null
+		}
+	}): Promise<string> => {
+		// TODO: This should be a single transaction,
+		// but Drizzle does not support them with Cloudflare D1:
+		// https://github.com/drizzle-team/drizzle-orm/issues/4212
+
+		// Check if this provider account already exists
+		const [existingProviderUser] = await this.#db
+			.select({userId: usersProviders.userId})
+			.from(usersProviders)
 			.where(
 				and(
-					eq(providersToUsers.providerId, provider.providerId),
-					eq(providersToUsers.providerUserId, provider.providerUserId),
+					eq(usersProviders.provider, provider),
+					eq(usersProviders.providerUserId, providerUserId),
 				),
 			)
 			.limit(1)
 
-		return result ? result.userId : null
-	}
-
-	async findByEmail(email: string) {
-		const [result] = await this.#db
-			.select({id: users.id})
-			.from(users)
-			.where(eq(users.email, email))
-			.limit(1)
-
-		return result ? result.id : null
-	}
-
-	async findByVerificationCode(code: string) {
-		return this.#db.transaction(async (tx) => {
-			const [user] = await tx
-				.select({
-					userId: users.id,
-					emailVerified: users.emailVerified,
-					expiresAt: verificationCodes.expiresAt,
+		if (existingProviderUser) {
+			// Update existing user with latest data
+			const userId = existingProviderUser.userId
+			await this.#db
+				.update(users)
+				.set({
+					name: user.name,
+					email: user.email,
+					avatarUrl: user.avatarUrl,
 				})
+				.where(eq(users.id, userId))
+			return userId
+		}
+
+		if (user.email) {
+			// Check if there is already a user who's verified this email
+			const [existingUser] = await this.#db
+				.select({id: users.id})
 				.from(users)
-				.leftJoin(verificationCodes, eq(users.id, verificationCodes.userId))
-				.where(eq(verificationCodes.code, code))
+				.where(
+					and(eq(users.email, user.email), eq(users.isEmailVerified, true)),
+				)
 				.limit(1)
 
-			if (!user) return null
-
-			const {userId, expiresAt, emailVerified} = user
-			if (userId && expiresAt) {
-				await tx
-					.delete(verificationCodes)
-					.where(eq(verificationCodes.userId, userId))
-
-				if (!isWithinExpirationDate(expiresAt)) {
-					return null
+			if (existingUser) {
+				// Add the provider association to the existing user
+				const userProvider: InsertUserProvider = {
+					userId: existingUser.id,
+					provider,
+					providerUserId,
 				}
 
-				if (!emailVerified) {
-					await tx
-						.update(users)
-						.set({emailVerified: true})
-						.where(eq(users.id, userId))
-				}
+				await this.#db.insert(usersProviders).values(userProvider)
 
-				return userId
-			} else {
-				return null
+				return existingUser.id
 			}
-		})
+		}
+
+		// Create new user and link to provider
+		const newUser: InsertUser = {
+			name: user.name,
+			email: user.email,
+			isEmailVerified: !!user.email,
+			avatarUrl: user.avatarUrl,
+		}
+
+		const [createdUser] = await this.#db
+			.insert(users)
+			.values(newUser)
+			.returning({id: users.id})
+
+		// Link user to OAuth provider
+		const userProvider: InsertUserProvider = {
+			userId: createdUser.id,
+			provider,
+			providerUserId,
+		}
+
+		await this.#db.insert(usersProviders).values(userProvider)
+
+		return createdUser.id
 	}
 
-	async createUser(user: InsertUser, provider?: Provider) {
-		return this.#db.transaction(async (tx) => {
-			const [{id}] = await tx
-				.insert(users)
-				.values(user)
-				.returning({id: users.id})
+	updateUserProfile = (user: {id: string; name: string}): Promise<void> =>
+		this.#db.update(users).set({name: user.name}).where(eq(users.id, user.id))
 
-			if (provider) {
-				await tx.insert(providersToUsers).values({...provider, userId: id})
-			}
-
-			return id
-		})
+	createSession = async (token: string, userId: string): Promise<Session> => {
+		const sessionId = encodeHexLowerCase(
+			sha256(new TextEncoder().encode(token)),
+		)
+		const session: Session = {
+			id: sessionId,
+			userId,
+			expiresAt: new Date(Date.now() + DAY_IN_MS * 30),
+		}
+		await this.#db.insert(sessions).values(session)
+		return session
 	}
 
-	async addProviderToUser(userId: string, provider: Provider) {
-		this.#db.insert(providersToUsers).values({...provider, userId})
-	}
-
-	async updateUserProfile({
-		id,
-		...restOfUser
-	}: Pick<User, 'id' | 'name' | 'avatarUrl'>) {
-		await this.#db.update(users).set(restOfUser).where(eq(users.id, id))
-		return
-	}
-
-	async generateVerificationCode(userId: string) {
-		await this.#db
-			.delete(verificationCodes)
-			.where(eq(verificationCodes.userId, userId))
-
-		const [{code}] = await this.#db
-			.insert(verificationCodes)
-			.values({
-				userId,
-				expiresAt: createDate(new TimeSpan(15, 'm')), // 15 minutes
+	validateSessionToken = async (
+		token: string,
+	): Promise<SessionValidationResult> => {
+		const sessionId = encodeHexLowerCase(
+			sha256(new TextEncoder().encode(token)),
+		)
+		const [result] = await this.#db
+			.select({
+				user: {
+					id: users.id,
+					name: users.name,
+					email: users.email,
+					avatarUrl: users.avatarUrl,
+					isAdmin: users.isAdmin,
+				},
+				session: sessions,
 			})
-			.returning({code: verificationCodes.code})
+			.from(sessions)
+			.innerJoin(users, eq(sessions.userId, users.id))
+			.where(eq(sessions.id, sessionId))
 
-		return code
+		if (!result) {
+			return {session: null, user: null}
+		}
+		const {session, user} = result
+
+		const sessionExpired = Date.now() >= session.expiresAt.getTime()
+		if (sessionExpired) {
+			await this.#db.delete(sessions).where(eq(sessions.id, session.id))
+			return {session: null, user: null}
+		}
+
+		const renewSession =
+			Date.now() >= session.expiresAt.getTime() - DAY_IN_MS * 15
+		if (renewSession) {
+			session.expiresAt = new Date(Date.now() + DAY_IN_MS * 30)
+			await this.#db
+				.update(sessions)
+				.set({expiresAt: session.expiresAt})
+				.where(eq(sessions.id, session.id))
+		}
+
+		return {session, user}
 	}
+
+	invalidateSession = (sessionId: string): Promise<void> =>
+		this.#db.delete(sessions).where(eq(sessions.id, sessionId))
 }

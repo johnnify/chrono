@@ -1,23 +1,20 @@
 <script lang="ts">
 	import {Dialog as SheetPrimitive} from 'bits-ui'
-	import {fade} from 'svelte/transition'
 	import {cn} from '$lib/utils'
 
-	type Props = SheetPrimitive.OverlayProps
-
 	let {
-		class: className = '',
-		transition = fade,
-		transitionConfig = {
-			duration: 150,
-		},
+		ref = $bindable(null),
+		class: className,
 		...restProps
-	}: Props = $props()
+	}: SheetPrimitive.OverlayProps = $props()
 </script>
 
 <SheetPrimitive.Overlay
-	{transition}
-	{transitionConfig}
-	class={cn('bg-background/80 fixed inset-0 z-50 backdrop-blur-sm', className)}
+	bind:ref
+	data-slot="sheet-overlay"
+	class={cn(
+		'data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-50 bg-black/50',
+		className,
+	)}
 	{...restProps}
 />

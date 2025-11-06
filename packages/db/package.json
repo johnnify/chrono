@@ -1,0 +1,22 @@
+{
+	"name": "@repo/db",
+	"version": "0.1.0",
+	"private": true,
+	"type": "module",
+	"exports": {
+		".": "./src/index.ts",
+		"./schema": "./src/schema/index.ts",
+		"./types": "./src/types/index.ts"
+	},
+	"scripts": {
+		"check": "tsc --noEmit",
+		"lint": "oxlint --type-aware"
+	},
+	"dependencies": {
+		"drizzle-orm": "^0.44.7"
+	},
+	"devDependencies": {
+		"@cloudflare/workers-types": "^4.20251106.1",
+		"typescript": "^5.9.3"
+	}
+}

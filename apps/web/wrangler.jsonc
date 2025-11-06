@@ -1,0 +1,24 @@
+{
+	"name": "chrono",
+	"main": ".svelte-kit/cloudflare/_worker.js",
+	"compatibility_date": "2025-01-01",
+	"assets": {
+		"binding": "ASSETS",
+		"directory": ".svelte-kit/cloudflare",
+	},
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "chrono",
+			"database_id": "TODO:REPLACE_WITH_NEW_D1",
+			"migrations_dir": "drizzle",
+		},
+	],
+	"observability": {
+		"logs": {
+			"enabled": true,
+			"head_sampling_rate": 1,
+			"invocation_logs": false,
+		},
+	},
+}

@@ -1,26 +1,20 @@
 <script lang="ts">
-	import type {Snippet} from 'svelte'
 	import type {HTMLAttributes} from 'svelte/elements'
-	import type {HeadingLevel} from './index'
-	import {cn} from '$lib/utils'
-
-	type Props = {
-		children: Snippet
-		tag?: HeadingLevel
-	} & HTMLAttributes<HTMLDivElement>
+	import {cn, type WithElementRef} from '$lib/utils'
 
 	let {
+		ref = $bindable(null),
+		class: className,
 		children,
-		tag = 'h3',
-		class: className = '',
 		...restProps
-	}: Props = $props()
+	}: WithElementRef<HTMLAttributes<HTMLDivElement>> = $props()
 </script>
 
-<svelte:element
-	this={tag}
-	class={cn('font-semibold leading-none tracking-tight', className)}
+<div
+	bind:this={ref}
+	data-slot="card-title"
+	class={cn('leading-none font-semibold', className)}
 	{...restProps}
 >
-	{@render children()}
-</svelte:element>
+	{@render children?.()}
+</div>

@@ -1,32 +1,49 @@
 <script lang="ts">
-	import PageTitle from '$lib/components/PageTitle.svelte'
-	import Warning from '$lib/components/icons/Warning.svelte'
+	import AlertIcon from '~icons/mdi/alert-outline'
+
+	import {page} from '$app/state'
+	import {dev} from '$app/environment'
+	import PageTitle from '$lib/components/typography/PageTitle.svelte'
 	import * as Alert from '$lib/components/ui/alert'
+	import FieldDescription from '$lib/components/ui/field/field-description.svelte'
+	import Button from '$lib/components/ui/button/button.svelte'
+	import OAuthLoginForm from './OAuthLoginForm.svelte'
+	import MockLoginForm from './MockLoginForm.svelte'
 
-	import {page} from '$app/stores'
-	import SocialLoginForm from './SocialLoginForm.svelte'
-
-	let hasAuthError = $derived($page.url.searchParams.get('error') === 'auth')
-
-	let {data} = $props()
+	let hasAuthError = $derived(page.url.searchParams.get('error') === 'auth')
 </script>
 
-<main class="container max-w-prose">
+<main class="container flex max-w-prose grow flex-col justify-center">
 	<PageTitle class="mb-6">Login</PageTitle>
 
 	{#if hasAuthError}
 		<Alert.Root variant="destructive" class="mb-6">
-			<Warning class="h-5 w-5" />
+			<AlertIcon class="size-5" />
 			<Alert.Title>There was a problem login you in</Alert.Title>
 			<Alert.Description>
-				Please try again, maybe with a different method?
+				Please try again. If the problem persists, reach out!
 			</Alert.Description>
 		</Alert.Root>
 	{/if}
 
 	<section class="mb-8 flex flex-col gap-4">
-		<p class="max-w-prose">Sign-up or login, all with the same button:</p>
+		<p>Login or sign-up with your Google account:</p>
 
-		<SocialLoginForm data={data.socialLoginForm} />
+		<OAuthLoginForm />
+
+		{#if dev}
+			<MockLoginForm />
+		{/if}
 	</section>
+	<FieldDescription class="text-center">
+		By logging in, you agree to our <Button
+			size="inline"
+			variant="link"
+			href="/terms">Terms of Service</Button
+		>
+		and
+		<Button size="inline" variant="link" href="/privacy-policy"
+			>Privacy Policy</Button
+		>.
+	</FieldDescription>
 </main>

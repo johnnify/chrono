@@ -1,35 +1,30 @@
 import {type Handle} from '@sveltejs/kit'
 
-import {lucia} from '$lib/server/db/auth/lucia'
+import {
+	setSessionTokenCookie,
+	deleteSessionTokenCookie,
+	sessionCookieName,
+} from '$lib/server/auth'
 
 export const authHandle: Handle = async ({event, resolve}) => {
-	const sessionId = event.cookies.get(lucia.sessionCookieName)
-	if (!sessionId) {
+	const sessionToken = event.cookies.get(sessionCookieName)
+	if (!sessionToken) {
 		event.locals.user = null
 		event.locals.session = null
 		return resolve(event)
 	}
 
-	const {session, user} = await lucia.validateSession(sessionId)
-	if (session && session.fresh) {
-		const sessionCookie = lucia.createSessionCookie(session.id)
-		event.cookies.set(sessionCookie.name, sessionCookie.value, {
-			// SvelteKit deviates from the de-facto standard
-			// `sessionCookie.attributes` follows,
-			// we need to explicitly set `path`
-			path: '/',
-			...sessionCookie.attributes,
-		})
-	}
-	if (!session) {
-		const sessionCookie = lucia.createBlankSessionCookie()
-		event.cookies.set(sessionCookie.name, sessionCookie.value, {
-			path: '/',
-			...sessionCookie.attributes,
-		})
+	const {session, user} =
+		await event.locals.usersRepo.validateSessionToken(sessionToken)
+	if (session) {
+		setSessionTokenCookie(event.cookies, sessionToken, session.expiresAt)
+	} else {
+		console.info(`invalid session token ${sessionToken}`)
+		deleteSessionTokenCookie(event.cookies)
 	}
 
 	event.locals.user = user
 	event.locals.session = session
+
 	return resolve(event)
 }

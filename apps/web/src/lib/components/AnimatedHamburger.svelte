@@ -13,7 +13,7 @@
 	fill="none"
 	stroke="currentColor"
 	stroke-width="5"
-	class="w-10"
+	class="size-8"
 	class:open
 	{...restProps}
 >

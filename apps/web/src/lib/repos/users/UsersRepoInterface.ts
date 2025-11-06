@@ -1,31 +1,36 @@
-import type {ProviderId} from '$lib/schemas'
-import type {InsertUser, SelectUser} from '$lib/server/db/schema/auth'
+import type {AuthProviderId, InsertUser, SelectUser, Session} from '@repo/db'
 
-export type User = SelectUser
-export type NewUser = InsertUser
+export type User = Pick<
+	SelectUser,
+	'id' | 'name' | 'email' | 'isAdmin' | 'avatarUrl'
+>
+export type NewOrExistingUser = InsertUser
 
-export type Provider = {
-	providerId: ProviderId
-	providerUserId: string
+export type SessionValidationResult = {
+	session: Session | null
+	user: User | null
 }
 
 export interface UsersRepoInterface {
-	findById(id: string): Promise<SelectUser | null>
-	// returns the user's id
-	findByProvider(provider: Provider): Promise<string | null>
-	// returns the user's id
-	findByEmail(email: string): Promise<string | null>
-	// returns the user's id
-	findByVerificationCode(code: string): Promise<string | null>
+	// creates new user, or updates existing one. Returns the user id
+	upsertUser(user: NewOrExistingUser): Promise<string>
 
-	// returns the new user's id
-	createUser(user: NewUser, provider?: Provider): Promise<string>
+	// OAuth user handling - creates user and links to provider, or updates existing linked user
+	upsertOAuthUser(params: {
+		provider: AuthProviderId
+		providerUserId: string
+		user: {
+			name: string
+			email: string | null
+			avatarUrl?: string | null
+		}
+	}): Promise<string>
 
-	addProviderToUser(userId: string, provider: Provider): Promise<void>
+	updateUserProfile(params: {id: string; name: string}): Promise<void>
 
-	updateUserProfile(
-		user: Pick<User, 'id' | 'name'> | {avatarUrl?: string | null},
-	): Promise<void>
+	// session handling
+	createSession(token: string, userId: string): Promise<Session>
+	validateSessionToken(token: string): Promise<SessionValidationResult>
 
-	generateVerificationCode(userId: string): Promise<string>
+	invalidateSession(sessionId: string): Promise<void>
 }

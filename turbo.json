@@ -1,32 +1,27 @@
 {
 	"$schema": "https://turbo.build/schema.json",
-	"globalDependencies": ["**/.env.*local"],
+	"globalEnv": [
+		"MSW_ENABLED",
+		"MOCK_AUTH_SECRET",
+		"PUBLIC_GOOGLE_CLIENT_ID",
+		"GOOGLE_CLIENT_SECRET"
+	],
+	"globalDependencies": [".env", ".env.local", ".env.test"],
 	"tasks": {
-		"build": {
-			"dependsOn": ["^build"],
-			"outputs": [
-				".next/**",
-				"!.next/cache/**",
-				".svelte-kit/**",
-				".vercel/**"
-			],
-			"env": [
-				"MSW_ENABLED",
-				"DB_URL",
-				"DB_AUTH_TOKEN",
-				"GOOGLE_CLIENT_ID",
-				"GOOGLE_CLIENT_SECRET",
-				"OPENAI_API_KEY"
-			]
-		},
 		"dev": {
-			"cache": false,
-			"persistent": true
+			"persistent": true,
+			"cache": false
+		},
+		"tdd": {
+			"persistent": true,
+			"cache": false
 		},
 		"lint": {},
-		"test:e2e": {},
-		"test:unit": {},
-		"stop": {},
-		"first-time": {}
+		"test": {},
+		"check": {},
+		"build": {
+			"inputs": ["$TURBO_DEFAULT$", "**/.env*"],
+			"outputs": ["build/**"]
+		}
 	}
 }

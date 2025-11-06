@@ -18,7 +18,10 @@ vite.config.ts.timestamp-*
 /tests/credentials/*
 
 # db
-local.db*
+*.db
 
 # build artifacts
 .vercel
+
+# src/lib is the default "common modules" directory in SvelteKit
+!lib/

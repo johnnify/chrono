@@ -1,44 +1,28 @@
 {
 	"name": "chrono",
-	"private": true,
+	"version": "0.0.1",
+	"type": "module",
 	"scripts": {
-		"build": "turbo build",
 		"dev": "turbo dev",
-		"lint": "turbo lint",
-		"stop": "turbo stop",
+		"build": "turbo build",
 		"format": "prettier --write .",
-		"test": "turbo test:e2e",
-		"test:unit": "turbo test:unit",
-		"first-time": "turbo first-time",
-		"update": "ncu -uiws --root --format group --install always"
+		"lint": "turbo lint",
+		"test": "turbo test",
+		"check": "turbo check",
+		"tdd": "turbo tdd"
 	},
 	"devDependencies": {
-		"eslint": "^9.13.0",
-		"eslint-config-prettier": "^9.1.0",
-		"eslint-config-turbo": "^2.2.1",
-		"eslint-plugin-only-warn": "^1.1.0",
-		"npm-check-updates": "^17.1.4",
-		"globals": "^15.11.0",
-		"prettier": "^3.3.3",
-		"prettier-plugin-svelte": "^3.2.7",
-		"prettier-plugin-tailwindcss": "^0.6.8",
-		"turbo": "^2.2.1",
-		"typescript-eslint": "^8.10.0"
+		"@prettier/plugin-oxc": "^0.0.4",
+		"@types/node": "^24.10.0",
+		"oxlint": "^1.26.0",
+		"oxlint-tsgolint": "^0.5.1",
+		"prettier": "^3.6.2",
+		"prettier-plugin-svelte": "^3.4.0",
+		"prettier-plugin-tailwindcss": "^0.7.1",
+		"turbo": "^2.6.0"
 	},
-	"packageManager": "pnpm@9.12.2",
 	"engines": {
-		"node": ">=20"
+		"node": "24.11.0"
 	},
-	"volta": {
-		"node": "20.17.0",
-		"pnpm": "9.10.0"
-	},
-	"trustedDependencies": [
-		"@sveltejs/kit",
-		"esbuild",
-		"msw",
-		"sharp",
-		"sqlite3",
-		"svelte-preprocess"
-	]
+	"packageManager": "pnpm@10.20.0"
 }

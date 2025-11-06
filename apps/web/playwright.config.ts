@@ -1,4 +1,14 @@
-import {defineConfig, devices, Project} from '@playwright/test'
+import {defineConfig, devices, type Project} from '@playwright/test'
+import dotenvFlow from 'dotenv-flow'
+import path from 'path'
+import {fileURLToPath} from 'url'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+// import environment variables
+dotenvFlow.config({
+	path: __dirname,
+})
 
 /* Configure projects for major browsers */
 const projects: Project[] = [
@@ -17,12 +27,11 @@ const projects: Project[] = [
 	{
 		name: 'Mobile Safari',
 		use: {
-			...devices['iPhone 14 Pro'],
+			...devices['iPhone 15 Pro'],
 			contextOptions: {reducedMotion: 'reduce'},
 		},
 		testIgnore: /.*desktop.spec.ts/,
 	},
-
 	// {
 	// 	name: 'webkit',
 	// 	use: {...devices['Desktop Safari']},
@@ -45,18 +54,19 @@ const projects: Project[] = [
 	// },
 ]
 
-if (process.env.MSW_ENABLED === 'true') {
+// Only run auth setup and cleanup when we hav an Auth Secret
+if (process.env.MOCK_AUTH_SECRET) {
 	projects.forEach((project) => {
-		project.dependencies = ['setup db']
+		project.dependencies = ['setup']
 	})
 	projects.push(
 		{
-			name: 'setup db',
+			name: 'setup',
 			testMatch: /global\.setup\.ts/,
-			teardown: 'cleanup db',
+			teardown: 'cleanup',
 		},
 		{
-			name: 'cleanup db',
+			name: 'cleanup',
 			testMatch: /global\.teardown\.ts/,
 		},
 	)
@@ -68,20 +78,21 @@ if (process.env.MSW_ENABLED === 'true') {
 export default defineConfig({
 	testDir: './tests',
 	/* Lower timeout for BDD */
-	timeout: process.env.CI ? 30_000 : 5_000,
-	/* Run tests in files in parallel */
-	fullyParallel: true,
+	timeout: process.env.CI ? 60_000 : 10_000,
+	/* Do not fully parallelise tests in CI */
+	fullyParallel: !process.env.CI,
 	/* Fail the build on CI if you accidentally left test.only in the source code. */
 	forbidOnly: !!process.env.CI,
-	/* Retry on CI only */
-	retries: process.env.CI ? 2 : 0,
-	/* Opt out of parallel tests on CI. */
-	workers: process.env.CI ? 1 : undefined,
+	/* Retry more on CI */
+	retries: process.env.CI ? 4 : 1,
+	/* Limit the number of workers on CI, use default locally */
+	workers: process.env.CI ? 3 : undefined,
 	/* Reporter to use. See https://playwright.dev/docs/test-reporters */
 	// reporter: 'html',
 	/* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
 	use: {
 		/* Base URL to use in actions like `await page.goto('/')`. */
+		/* Point it to a deployment, to run tests against it! */
 		baseURL: process.env.PUBLIC_ROOT_URL || 'http://localhost:5173',
 
 		launchOptions: {
@@ -98,7 +109,7 @@ export default defineConfig({
 	/* Run your local dev server before starting the tests */
 	webServer: !process.env.PUBLIC_ROOT_URL
 		? {
-				command: 'pnpm dev',
+				command: 'pnpm preview',
 				port: 5173,
 				reuseExistingServer: true,
 			}

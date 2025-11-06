@@ -1,16 +1,18 @@
-import type {Session, User} from 'lucia'
-import type {LivestreamsRepoInterface} from '$lib/repos/livestreams/LivestreamsRepoInterface'
-import type {UsersRepoInterface} from '$lib/repos/users/UsersRepoInterface'
-import type {AiResponseRepoInterface} from '$lib/repos/aiResponse/AiResponseRepoInterface'
+import '@types/dom-speech-recognition'
+import {D1Database} from '@cloudflare/workers-types'
+import 'unplugin-icons/types/svelte'
+
+import type {DbUsersRepo} from '$lib/repos/users/DbUsersRepo'
+import type {User} from '$lib/repos/users/UsersRepoInterface'
+import type {SessionValidationResult} from '$lib/server/auth'
+import type {Rng} from '$lib/Rng'
 
 declare global {
 	// fresh API just dropped, let's extend Document
 	interface Document {
 		startViewTransition?(callback: () => Promise<void>): void
 	}
-	interface CSSStyleDeclaration {
-		viewTransitionName?: string
-	}
+
 	interface Window {
 		toggleTheme?(): void
 	}
@@ -23,14 +25,20 @@ declare global {
 		// interface Error {}
 		interface Locals {
 			user: User | null
-			session: Session | null
-			usersRepo: UsersRepoInterface
-			livestreamsRepo: LivestreamsRepoInterface
-			aiResponseRepo: AiResponseRepoInterface
+			session: SessionValidationResult['session']
+			usersRepo: DbUsersRepo
+			rng: Rng
 		}
-		// interface PageData {}
+		interface PageData {
+			user?: User | null
+			rng: Rng
+		}
 		// interface PageState {}
-		// interface Platform {}
+		interface Platform {
+			env?: {
+				DB: D1Database
+			}
+		}
 
 		namespace Superforms {
 			type Message = {

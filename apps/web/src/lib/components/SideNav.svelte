@@ -1,8 +1,15 @@
 <script lang="ts">
+	import UserCircle from '~icons/mdi/user-circle-outline'
+	import UploadIcon from '~icons/material-symbols/upload'
+	import LoginIcon from '~icons/material-symbols-light/login'
+	import LogoutIcon from '~icons/material-symbols-light/logout'
+
 	import {beforeNavigate} from '$app/navigation'
-	import {page} from '$app/stores'
-	import {Button} from '$lib/components/ui/button'
+	import {page} from '$app/state'
+	import {Button, buttonVariants} from '$lib/components/ui/button'
 	import * as Sheet from '$lib/components/ui/sheet'
+	import {cn} from '$lib/utils'
+	import {logout} from '$lib/auth.remote'
 	import AnimatedHamburger from './AnimatedHamburger.svelte'
 
 	let menuOpen = $state(false)
@@ -15,61 +22,68 @@
 	})
 </script>
 
-{#snippet labelledBreak(label: string)}
+{#snippet titledLineBreak(title: string)}
 	<div class="relative">
 		<div class="absolute inset-0 flex items-center">
-			<span class="w-full border-t"></span>
+			<span class="border-border w-full border-t"></span>
 		</div>
 		<div class="relative flex justify-center text-xs uppercase">
-			<span class="bg-background text-muted-foreground px-2">{label}</span>
+			<span class="bg-background text-muted-foreground px-2">{title}</span>
 		</div>
 	</div>
 {/snippet}
 
-<div class="sm:hidden">
+<div>
 	<Sheet.Root bind:open={menuOpen}>
-		<Sheet.Trigger asChild let:builder>
-			<Button
-				builders={[builder]}
-				variant="ghost"
-				size="icon"
-				aria-label="open navigation menu"
-			>
-				<AnimatedHamburger open={menuOpen} />
-			</Button>
+		<Sheet.Trigger
+			class={cn(buttonVariants({variant: 'ghost', size: 'icon'}), 'flex')}
+			aria-label="Open navigation menu"
+		>
+			<AnimatedHamburger open={menuOpen} />
 		</Sheet.Trigger>
-		<Sheet.Content side="right" class="content z-50">
-			<Sheet.Header class="mb-8">
+		<Sheet.Content side="right" class="z-50">
+			<Sheet.Header>
 				<Sheet.Title>Navigation</Sheet.Title>
 			</Sheet.Header>
-			{@render labelledBreak('main')}
-			<ul class="grid gap-1 sm:gap-2">
+			{@render titledLineBreak('main')}
+			<ul class="items-center gap-1 pl-2">
 				<li>
-					<Button variant="ghost" href="/">Home</Button>
-				</li>
-				<li>
-					<Button variant="ghost" href="/livestreams">Livestreams</Button>
-				</li>
-				<li>
-					<Button variant="ghost" href="/about">About</Button>
+					<Button variant="ghost" href="/upload">
+						<UploadIcon />
+						Upload
+					</Button>
 				</li>
 			</ul>
 
-			{@render labelledBreak('account')}
-			<ul class="grid gap-1 sm:gap-2">
-				{#if $page.data.session}
+			{@render titledLineBreak('account')}
+			<ul class="items-center gap-1 pl-2">
+				{#if page.data.user}
 					<li>
-						<Button variant="ghost" href="/profile">Profile</Button>
+						<Button variant="ghost" href="/profile">
+							<UserCircle />
+							Profile
+						</Button>
+					</li>
+					<li>
+						<form {...logout}>
+							<Button variant="ghost" disabled={!!logout.pending}>
+								<LogoutIcon />
+								Sign out
+							</Button>
+						</form>
 					</li>
 				{:else}
 					<li>
-						<Button variant="ghost" href="/login">Login</Button>
+						<Button variant="ghost" href="/login">
+							<LoginIcon />
+							Login
+						</Button>
 					</li>
 				{/if}
 			</ul>
 
-			{@render labelledBreak('legal')}
-			<ul class="grid gap-1 sm:gap-2">
+			{@render titledLineBreak('legal')}
+			<ul class="items-center gap-1 pl-2">
 				<li>
 					<Button variant="ghost" href="/terms">Terms of Service</Button>
 				</li>

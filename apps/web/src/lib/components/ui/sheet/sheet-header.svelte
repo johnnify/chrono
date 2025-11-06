@@ -1,18 +1,20 @@
 <script lang="ts">
-	import type {Snippet} from 'svelte'
 	import type {HTMLAttributes} from 'svelte/elements'
-	import {cn} from '$lib/utils'
+	import {cn, type WithElementRef} from '$lib/utils'
 
-	type Props = {
-		children: Snippet
-	} & HTMLAttributes<HTMLDivElement>
-
-	let {children, class: className = '', ...restProps}: Props = $props()
+	let {
+		ref = $bindable(null),
+		class: className,
+		children,
+		...restProps
+	}: WithElementRef<HTMLAttributes<HTMLDivElement>> = $props()
 </script>
 
 <div
-	class={cn('flex flex-col space-y-2 text-center sm:text-left', className)}
+	bind:this={ref}
+	data-slot="sheet-header"
+	class={cn('flex flex-col gap-1.5 p-4', className)}
 	{...restProps}
 >
-	{@render children()}
+	{@render children?.()}
 </div>

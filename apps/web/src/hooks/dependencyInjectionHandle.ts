@@ -1,19 +1,22 @@
 import type {Handle} from '@sveltejs/kit'
+import {createDrizzleDb} from '@repo/db'
 
-import {db} from '$lib/server/db/db'
-import {openaiProvider, openaiClient} from '$lib/server/llm/openai'
-import {LivestreamsDbRepo} from '$lib/repos/livestreams/LivestreamsDbRepo'
 import {DbUsersRepo} from '$lib/repos/users/DbUsersRepo'
-import {AiResponseDbRepo} from '$lib/repos/aiResponse/AiResponseDbRepo'
+import {Rng} from '$lib/Rng'
 
 export const dependencyInjectionHandle: Handle = async ({event, resolve}) => {
+	if (!event.platform?.env) {
+		throw new Error('Cloudflare Platform not available')
+	}
+	if (!event.platform.env.DB) {
+		throw new Error('Cloudflare D1 DB not available')
+	}
+
+	const db = createDrizzleDb(event.platform.env.DB)
 	event.locals.usersRepo = new DbUsersRepo(db)
-	event.locals.livestreamsRepo = new LivestreamsDbRepo(db)
-	event.locals.aiResponseRepo = new AiResponseDbRepo({
-		db,
-		openaiProvider,
-		openaiClient,
-	})
+
+	const seed = event.url.searchParams.get('seed') ?? Date.now().toString()
+	event.locals.rng = new Rng(seed)
 
 	return resolve(event)
 }

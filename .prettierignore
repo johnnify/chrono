@@ -1,11 +1,10 @@
+# Package Managers
+package-lock.json
 pnpm-lock.yaml
-# Build Outputs
-.vercel
-.next/
-out/
-build
-dist
-.svelte-kit/
-**/vite.config.ts.timestamp*
-pb_data/
+yarn.lock
 
+# build outputs
+dist/
+
+# local wrangler files
+/data/v3

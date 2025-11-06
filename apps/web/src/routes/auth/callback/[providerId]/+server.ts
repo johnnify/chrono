@@ -1,11 +1,13 @@
-import {OAuth2RequestError} from 'arctic'
+import {ArcticFetchError, OAuth2RequestError} from 'arctic'
 import {error, redirect} from '@sveltejs/kit'
 
 import type {RequestHandler} from './$types'
-import {validateAuthorizationCode} from '$lib/server/db/auth/providers'
-import {lucia} from '$lib/server/db/auth/lucia'
-import {fetchProviderUser} from '$lib/server/fetchProviderUser/fetchProviderUser'
-import {ProvidersEnum} from '$lib/schemas'
+import {
+	parseProviderUserFromToken,
+	validateAuthorizationCode,
+} from '$lib/server/auth/providers'
+import {generateSessionToken, setSessionTokenCookie} from '$lib/server/auth'
+import {AuthProvidersEnum} from '$lib/schemas'
 
 export const GET: RequestHandler = async ({
 	url,
@@ -13,7 +15,7 @@ export const GET: RequestHandler = async ({
 	params,
 	locals: {usersRepo},
 }) => {
-	const validation = ProvidersEnum.safeParse(params.providerId)
+	const validation = AuthProvidersEnum.safeParse(params.providerId)
 
 	if (!validation.success) {
 		error(400, `${params.providerId} is not an available login provider`)
@@ -37,73 +39,53 @@ export const GET: RequestHandler = async ({
 	}
 
 	try {
-		const accessToken = await validateAuthorizationCode({
+		const {idToken} = await validateAuthorizationCode({
 			providerId,
 			rootUrl: url.origin,
 			code,
 			codeVerifier: storedCodeVerifier,
 		})
-		const providerUser = await fetchProviderUser(providerId, accessToken)
 
-		const existingUserId = await usersRepo.findByProvider({
-			providerId,
-			providerUserId: providerUser.id,
+		const tokenUser = parseProviderUserFromToken(providerId, idToken)
+
+		// Create or update user linked to OAuth provider
+		const userId = await usersRepo.upsertOAuthUser({
+			provider: providerId,
+			providerUserId: tokenUser.id,
+			user: {
+				name: tokenUser.name,
+				email: tokenUser.email,
+				avatarUrl: tokenUser.avatarUrl,
+			},
 		})
 
-		if (existingUserId) {
-			const session = await lucia.createSession(existingUserId, {})
-			const sessionCookie = lucia.createSessionCookie(session.id)
-			cookies.set(sessionCookie.name, sessionCookie.value, {
-				path: '/',
-				...sessionCookie.attributes,
-			})
-		} else {
-			const existingUserId = await usersRepo.findByEmail(providerUser.email)
+		const sessionToken = generateSessionToken()
+		const session = await usersRepo.createSession(sessionToken, userId)
 
-			let userId: string
-			if (existingUserId) {
-				userId = existingUserId
-				if (!providerUser.emailVerified) {
-					throw Error(`email not verified with ${providerId}`)
-				}
-
-				await usersRepo.addProviderToUser(userId, {
-					providerId,
-					providerUserId: providerUser.id,
-				})
-			} else {
-				userId = await usersRepo.createUser(
-					{
-						email: providerUser.email,
-						name: providerUser.name,
-						avatarUrl: providerUser.avatarUrl,
-						emailVerified: providerUser.emailVerified,
-					},
-					{
-						providerId,
-						providerUserId: providerUser.id,
-					},
-				)
-			}
-
-			const session = await lucia.createSession(userId, {})
-			const sessionCookie = lucia.createSessionCookie(session.id)
-			cookies.set(sessionCookie.name, sessionCookie.value, {
-				path: '/',
-				...sessionCookie.attributes,
-			})
-		}
+		setSessionTokenCookie(cookies, sessionToken, session.expiresAt)
 	} catch (err) {
 		if (err instanceof OAuth2RequestError) {
-			error(400, 'bad OAuth2Request, could not complete login flow')
+			console.error('Invalid authorization code, credentials, or redirect URI')
+			const code = err.code
+			console.error('bad OAuth2Request', code)
+
+			error(
+				400,
+				'Could not complete login flow. Please try again and contact the engineering team if the problem persists.',
+			)
 		}
-		if (err instanceof Error && err.message.includes('email not verified')) {
-			error(400, err.message)
+		if (err instanceof ArcticFetchError) {
+			const cause = err.cause
+			console.error('Arctic error trying to use Fetch API', cause)
+			error(
+				500,
+				`Could not complete server-side validation for ${providerId} sign-in`,
+			)
 		}
 
 		console.error(err)
-		error(500, 'Unexpected error creating or validating user')
+		error(500, `Unexpected error validating user for ${providerId}`)
 	}
 
-	redirect(302, '/livestreams')
+	redirect(302, '/')
 }

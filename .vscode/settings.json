@@ -1,11 +1,15 @@
 {
-	"eslint.workingDirectories": [
-		{
-			"mode": "auto"
-		}
+	"cSpell.words": [
+		"agentic",
+		"autodocs",
+		"chrono",
+		"color",
+		"cyrb128",
+		"flavor",
+		"oxlint",
+		"shadcn",
+		"superform"
 	],
-	"cSpell.words": ["chrono", "johnnify"],
-	// suggested by @N1c0 in the Discord :-)
 	"workbench.editor.customLabels.patterns": {
 		"**/src/hooks.{js,ts}": "universal hooks",
 		"**/src/hooks.server.{js,ts}": "server hooks",
@@ -26,6 +30,7 @@
 		"**/src/routes/**/[[]*[]]/+page.svelte": "${dirname(1)} ${dirname}",
 		"**/src/routes/**/[[]*[]]/+layout.svelte": "${dirname(1)} (layout)",
 		"**/src/routes/**/[[]*[]]/+error.svelte": "${dirname(1)} (error)",
+		"**/src/**/[!+]*.stories.svelte": "${filename} Stories",
 		"**/src/**/[!+]*.svelte": "${filename}"
 	}
 }

@@ -1,4 +1,4 @@
-import adapter from '@sveltejs/adapter-vercel'
+import adapter from '@sveltejs/adapter-cloudflare'
 import {vitePreprocess} from '@sveltejs/vite-plugin-svelte'
 
 /** @type {import('@sveltejs/kit').Config} */
@@ -9,13 +9,22 @@ const config = {
 
 	kit: {
 		// See https://kit.svelte.dev/docs/adapters for more information about adapters.
-		adapter: adapter({runtime: 'edge'}),
+		adapter: adapter({
+			platformProxy: {
+				// mirrors what `persist-to` appends in `app/crons`
+				persist: {path: '../../data/v3'},
+			},
+		}),
+		experimental: {
+			remoteFunctions: true,
+		},
 	},
 
 	compilerOptions: {
-		// bits-ui and other shadcn packages use Svelte 4 still :-(
-		// https://github.com/huntabyte/bits-ui/issues/287
-		// runes: true,
+		runes: true,
+		experimental: {
+			async: true,
+		},
 	},
 	vitePlugin: {
 		inspector: true,

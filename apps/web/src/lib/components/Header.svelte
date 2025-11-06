@@ -1,60 +1,64 @@
 <script lang="ts">
-	import {page} from '$app/stores'
+	import {setTheme, setMode, theme} from 'mode-watcher'
+	import AppIcon from '~icons/mdi/clock-outline'
+	import LoginIcon from '~icons/mdi/login'
+	import UploadIcon from '~icons/material-symbols/upload'
+	import UserCircle from '~icons/mdi/user-circle-outline'
+
+	import {page} from '$app/state'
 	import {Button} from '$lib/components/ui/button'
-	import MobileNav from './SideNav.svelte'
 	import ThemeToggleIcon from './ThemeToggleIcon.svelte'
+	import SideNav from './SideNav.svelte'
+
+	const cycleTheme = () => {
+		if (theme.current === 'dark') {
+			setTheme('light')
+			setMode('light')
+		} else {
+			setTheme('dark')
+			setMode('dark')
+		}
+	}
 </script>
 
 <header
-	class="bg-background/60 px-inline sticky top-0 z-30 mb-[5svh] flex items-center gap-4 py-4 backdrop-blur"
+	class="bg-background/70 sticky top-0 z-30 mb-[5svh] flex h-(--header-height) items-center gap-2 px-(--padding-inline) py-4 backdrop-blur-lg lg:gap-4"
 >
-	<MobileNav />
-	<div class="flex-1">
-		<Button variant="ghost" href="/" class="font-fancy px-0 text-xl font-black">
-			Chrono
+	<div class="-ml-4 flex shrink-0 grow items-center">
+		<Button variant="ghost" href="/" class="font-serif text-xl font-bold">
+			<AppIcon class="size-5.5" /> Chrono
 		</Button>
 	</div>
-	<nav
-		class="flex-none items-center gap-1 sm:flex sm:gap-2"
-		aria-label="Header"
-	>
-		{#if !$page.data.session}
-			<ul>
-				<li>
-					<Button variant="ghost" href="/login">login</Button>
-				</li>
-			</ul>
+
+	<nav aria-label="Header" class="flex">
+		<Button class="hidden sm:flex" variant="ghost" href="/upload">
+			<UploadIcon />
+			Upload
+		</Button>
+
+		{#if page.data.user}
+			<Button variant="ghost" href="/profile" aria-label="profile">
+				<UserCircle />
+			</Button>
+		{:else}
+			<Button variant="ghost" href="/login">
+				<LoginIcon />
+				Log in
+			</Button>
 		{/if}
-		<!-- Desktop nav -->
-		<ul class="hidden items-center gap-1 sm:flex sm:gap-2">
-			<li>
-				<Button variant="ghost" href="/livestreams">livestreams</Button>
-			</li>
-			{#if $page.data.session}
-				<li>
-					<Button variant="ghost" href="/profile">profile</Button>
-				</li>
-			{/if}
-			<li>
-				<Button variant="ghost" href="/about">about</Button>
-			</li>
-		</ul>
 	</nav>
 	<Button
 		variant="ghost"
 		size="icon"
-		onclick={() => {
-			if (window.toggleTheme) {
-				window.toggleTheme()
-			}
-		}}
-		class="active:translate-y-0"
+		onclick={cycleTheme}
+		aria-label="toggle light/dark theme"
 	>
-		<ThemeToggleIcon class="h-5 w-5 sm:h-6 sm:w-6" />
+		<ThemeToggleIcon />
 	</Button>
+	<SideNav />
 </header>
 
-<style lang="postcss">
+<style>
 	header {
 		view-transition-name: header;
 	}

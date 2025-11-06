@@ -1,16 +1,9 @@
 <script lang="ts">
-	import type {Snippet} from 'svelte'
-	import type {HTMLAnchorAttributes} from 'svelte/elements'
+	import Button, {type ButtonProps} from './ui/button/button.svelte'
 
-	import Link from './Link.svelte'
+	type Props = {href: string} & Omit<ButtonProps, 'target' | 'rel'>
 
-	type Props = {
-		children: Snippet
-	} & Omit<HTMLAnchorAttributes, 'target' | 'rel'>
-
-	let {children, ...restProps}: Props = $props()
+	let props: Props = $props()
 </script>
 
-<Link {...restProps} target="_blank" rel="noopener noreferrer">
-	{@render children()}
-</Link>
+<Button variant="link" target="_blank" rel="noopener noreferrer" {...props} />

@@ -1,19 +1,35 @@
-import dotenvFlow from 'dotenv-flow'
-import type {Config} from 'drizzle-kit'
+import {defineConfig} from 'drizzle-kit'
 
-dotenvFlow.config()
+let dbCredentials:
+	| {
+			accountId: string
+			databaseId: string
+			token: string
+	  }
+	| undefined
 
-if (!process.env.DB_URL) {
-	throw new Error('DB_URL environment variable not set')
+if (
+	!process.env.CLOUDFLARE_ACCOUNT_ID ||
+	!process.env.CLOUDFLARE_DATABASE_ID ||
+	!process.env.CLOUDFLARE_D1_TOKEN
+) {
+	console.error('🚨 Missing Cloudflare connection credentials')
+} else {
+	dbCredentials = {
+		accountId: process.env.CLOUDFLARE_ACCOUNT_ID,
+		databaseId: process.env.CLOUDFLARE_DATABASE_ID,
+		token: process.env.CLOUDFLARE_D1_TOKEN,
+	}
 }
 
-export default {
+export default defineConfig({
+	schema: '../../packages/db/src/schema',
+
+	verbose: true,
+	strict: true,
+
+	driver: 'd1-http',
 	dialect: 'sqlite',
-	driver: 'turso',
-	schema: './src/lib/server/db/schema/*',
-	out: './src/drizzle',
-	dbCredentials: {
-		url: process.env.DB_URL,
-		authToken: process.env.DB_AUTH_TOKEN,
-	},
-} satisfies Config
+
+	dbCredentials,
+})
