@@ -1,17 +1,24 @@
-import type {AuthProviderId, InsertUser, SelectUser, Session} from '@repo/db'
+import type {AuthProviderId, InsertUser, SelectUser} from '@repo/db'
 
-export type User = Pick<
-	SelectUser,
-	'id' | 'name' | 'email' | 'isAdmin' | 'avatarUrl'
->
-export type NewOrExistingUser = InsertUser
+export const userRoles = ['guest', 'user', 'admin'] as const
 
-export type SessionValidationResult = {
-	session: Session | null
-	user: User | null
+export type UserRole = (typeof userRoles)[number]
+
+export type User = Pick<SelectUser, 'id' | 'name' | 'email' | 'avatarUrl'>
+
+export type Session = {
+	id: string
+	userId: string
+	expiresAt: Date
+	userRole: UserRole
 }
 
+export type NewOrExistingUser = InsertUser
+
 export interface UsersRepoInterface {
+	// Get user by ID
+	getUserById(userId: string): Promise<User | null>
+
 	// creates new user, or updates existing one. Returns the user id
 	upsertUser(user: NewOrExistingUser): Promise<string>
 
@@ -30,7 +37,7 @@ export interface UsersRepoInterface {
 
 	// session handling
 	createSession(token: string, userId: string): Promise<Session>
-	validateSessionToken(token: string): Promise<SessionValidationResult>
+	validateSessionToken(token: string): Promise<Session | null>
 
 	invalidateSession(sessionId: string): Promise<void>
 }

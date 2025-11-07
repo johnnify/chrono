@@ -8,7 +8,7 @@ const profileSchema = z.object({
 export const updateProfile = form(profileSchema, async ({name}) => {
 	const {locals} = getRequestEvent()
 
-	const userId = locals.user?.id
+	const userId = locals.session?.userId
 	if (!userId) {
 		throw new Error('Somehow, you are not logged in')
 	}

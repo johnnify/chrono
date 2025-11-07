@@ -9,12 +9,12 @@ import {
 export const authHandle: Handle = async ({event, resolve}) => {
 	const sessionToken = event.cookies.get(sessionCookieName)
 	if (!sessionToken) {
-		event.locals.user = null
 		event.locals.session = null
+		event.locals.userRole = 'guest'
 		return resolve(event)
 	}
 
-	const {session, user} =
+	const session =
 		await event.locals.usersRepo.validateSessionToken(sessionToken)
 	if (session) {
 		setSessionTokenCookie(event.cookies, sessionToken, session.expiresAt)
@@ -23,8 +23,8 @@ export const authHandle: Handle = async ({event, resolve}) => {
 		deleteSessionTokenCookie(event.cookies)
 	}
 
-	event.locals.user = user
 	event.locals.session = session
+	event.locals.userRole = session?.userRole || 'guest'
 
 	return resolve(event)
 }

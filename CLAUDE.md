@@ -135,7 +135,7 @@ EVERY test should have a realistic to see fail.
 ### Important Notes
 
 - Use pnpm as package manager
-- Node.js 24.11.0 required (managed by Mise)
+- Node.js 25.1.0 required (managed by Mise)
 - MSW handlers require manual dev server restart when modified
 - All tests require dev servers running except unit tests
 
@@ -263,21 +263,3 @@ AVOID writing source code just for tests.
 When writing tests NEVER `waitForTimeout`. Playwright assertions have built-in waits, there must always be a better way than an explicitly waiting.
 
 When evaluating page performance, you MUST consider the Core Web Vitals. Layout Shift is unacceptable. Prevent it with common techniques like specifying width and height on images.
-
-# Agents
-
-## Working with Agendas
-
-**CRITICAL**: When the user mentions an "Agenda" or you see `.johnnify/AGENDA.md`:
-
-1. **ALWAYS use the `agenda-implementer` agent** via the Task tool
-2. **NEVER do the work yourself** - let the agent handle task execution
-3. The agent will:
-   - Work through tasks systematically
-   - Update `.johnnify/AGENDA.md` with progress/timestamps
-   - Update `.johnnify/CURRENT_TASK.md` to track active work
-   - Check in with the user between tasks
-4. **Do NOT** launch the agent and then take over - wait for the agent to complete or ask for guidance
-5. **Do NOT** manually update AGENDA.md or CURRENT_TASK.md - the agent handles this
-
-If you find yourself writing code related to an an `.johnnify/AGENDA.md`, STOP and use the agenda-implementer agent instead.

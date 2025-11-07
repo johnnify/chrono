@@ -1,29 +1,47 @@
 import {sha256} from '@oslojs/crypto/sha2'
 import {encodeHexLowerCase} from '@oslojs/encoding'
 import {eq, and} from 'drizzle-orm'
+import type {KVNamespace} from '@cloudflare/workers-types'
 import {
 	type DrizzleDb,
 	type AuthProviderId,
 	type InsertUser,
-	type Session,
 	type InsertUserProvider,
 	users,
-	sessions,
 	usersProviders,
 } from '@repo/db'
 import type {
 	NewOrExistingUser,
-	SessionValidationResult,
 	UsersRepoInterface,
+	Session,
+	UserRole,
+	User,
 } from './UsersRepoInterface'
 
 const DAY_IN_MS = 1000 * 60 * 60 * 24
 
-export class DbUsersRepo implements UsersRepoInterface {
+export class CloudflareUsersRepo implements UsersRepoInterface {
 	#db: DrizzleDb
+	#kv: KVNamespace
 
-	constructor(db: DrizzleDb) {
+	constructor(db: DrizzleDb, kv: KVNamespace) {
 		this.#db = db
+		this.#kv = kv
+	}
+
+	getUserById = async (userId: string): Promise<User | null> => {
+		const [user] = await this.#db
+			.select({
+				id: users.id,
+				name: users.name,
+				email: users.email,
+				avatarUrl: users.avatarUrl,
+			})
+			.from(users)
+			.where(eq(users.id, userId))
+			.limit(1)
+
+		return user
 	}
 
 	upsertUser = async (user: NewOrExistingUser): Promise<string> => {
@@ -143,60 +161,87 @@ export class DbUsersRepo implements UsersRepoInterface {
 		const sessionId = encodeHexLowerCase(
 			sha256(new TextEncoder().encode(token)),
 		)
+		const expiresAt = new Date(Date.now() + DAY_IN_MS * 30)
+
+		// Fetch user's admin status from D1
+		const [user] = await this.#db
+			.select({
+				isAdmin: users.isAdmin,
+			})
+			.from(users)
+			.where(eq(users.id, userId))
+			.limit(1)
+
+		if (!user) {
+			throw new Error(`User ${userId} not found`)
+		}
+
+		const userRole: UserRole = user.isAdmin ? 'admin' : 'user'
+
 		const session: Session = {
 			id: sessionId,
 			userId,
-			expiresAt: new Date(Date.now() + DAY_IN_MS * 30),
+			expiresAt,
+			userRole,
 		}
-		await this.#db.insert(sessions).values(session)
+
+		// Store session in KV
+		await this.#kv.put(sessionId, JSON.stringify(session), {
+			expirationTtl: (DAY_IN_MS * 30) / 1000, // KV expects seconds
+		})
+
 		return session
 	}
 
-	validateSessionToken = async (
-		token: string,
-	): Promise<SessionValidationResult> => {
+	validateSessionToken = async (token: string): Promise<Session | null> => {
 		const sessionId = encodeHexLowerCase(
 			sha256(new TextEncoder().encode(token)),
 		)
-		const [result] = await this.#db
-			.select({
-				user: {
-					id: users.id,
-					name: users.name,
-					email: users.email,
-					avatarUrl: users.avatarUrl,
-					isAdmin: users.isAdmin,
-				},
-				session: sessions,
-			})
-			.from(sessions)
-			.innerJoin(users, eq(sessions.userId, users.id))
-			.where(eq(sessions.id, sessionId))
 
-		if (!result) {
-			return {session: null, user: null}
+		// Read session from KV
+		const sessionString = await this.#kv.get(sessionId)
+		if (!sessionString) {
+			return null
 		}
-		const {session, user} = result
 
-		const sessionExpired = Date.now() >= session.expiresAt.getTime()
+		const storedSession = JSON.parse(sessionString) as {
+			id: string
+			userId: string
+			expiresAt: string
+			userRole: UserRole
+		}
+
+		const expiresAt = new Date(storedSession.expiresAt)
+
+		// Check if session is expired
+		const sessionExpired = Date.now() >= expiresAt.getTime()
 		if (sessionExpired) {
-			await this.#db.delete(sessions).where(eq(sessions.id, session.id))
-			return {session: null, user: null}
+			await this.#kv.delete(sessionId)
+			return null
 		}
 
-		const renewSession =
-			Date.now() >= session.expiresAt.getTime() - DAY_IN_MS * 15
+		// Renew session if it's halfway to expiration
+		const renewSession = Date.now() >= expiresAt.getTime() - DAY_IN_MS * 15
 		if (renewSession) {
-			session.expiresAt = new Date(Date.now() + DAY_IN_MS * 30)
-			await this.#db
-				.update(sessions)
-				.set({expiresAt: session.expiresAt})
-				.where(eq(sessions.id, session.id))
+			const newExpiresAt = new Date(Date.now() + DAY_IN_MS * 30)
+			const updatedSession: Session = {
+				...storedSession,
+				expiresAt: newExpiresAt,
+			}
+			await this.#kv.put(sessionId, JSON.stringify(updatedSession), {
+				expirationTtl: (DAY_IN_MS * 30) / 1000, // KV expects seconds
+			})
+			return updatedSession
 		}
 
-		return {session, user}
+		const session: Session = {
+			...storedSession,
+			expiresAt,
+		}
+
+		return session
 	}
 
 	invalidateSession = (sessionId: string): Promise<void> =>
-		this.#db.delete(sessions).where(eq(sessions.id, sessionId))
+		this.#kv.delete(sessionId)
 }

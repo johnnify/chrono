@@ -1,10 +1,9 @@
 import '@types/dom-speech-recognition'
-import {D1Database} from '@cloudflare/workers-types'
+import {D1Database, KVNamespace} from '@cloudflare/workers-types'
 import 'unplugin-icons/types/svelte'
 
-import type {DbUsersRepo} from '$lib/repos/users/DbUsersRepo'
-import type {User} from '$lib/repos/users/UsersRepoInterface'
-import type {SessionValidationResult} from '$lib/server/auth'
+import type {CloudflareUsersRepo} from '$lib/repos/users/CloudflareUsersRepo'
+import type {Session, UserRole} from '$lib/repos/users/UsersRepoInterface'
 import type {Rng} from '$lib/Rng'
 
 declare global {
@@ -24,26 +23,20 @@ declare global {
 	namespace App {
 		// interface Error {}
 		interface Locals {
-			user: User | null
-			session: SessionValidationResult['session']
-			usersRepo: DbUsersRepo
+			session: Session | null
+			userRole: UserRole
+			usersRepo: CloudflareUsersRepo
 			rng: Rng
 		}
 		interface PageData {
-			user?: User | null
+			userRole: UserRole
 			rng: Rng
 		}
 		// interface PageState {}
 		interface Platform {
 			env?: {
 				DB: D1Database
-			}
-		}
-
-		namespace Superforms {
-			type Message = {
-				type: 'error' | 'success'
-				text: string
+				SESSIONS_KV: KVNamespace
 			}
 		}
 	}

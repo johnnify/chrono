@@ -6,9 +6,11 @@
 			"WebSearch",
 			"WebFetch(domain:github.com)",
 			"WebFetch(domain:raw.githubusercontent.com)",
+			"WebFetch(domain:orm.drizzle.team)",
 			"Bash(cat:*)",
 			"Bash(mkdir:*)",
 			"Bash(ls:*)",
+			"Bash(mv:*)",
 			"Bash(pnpm format:*)",
 			"Bash(pnpm:*)",
 			"Bash(.specify/scripts/bash/*:*)",
@@ -23,6 +25,7 @@
 			"mcp__playwright__browser_close",
 			"mcp__playwright__browser_console_messages",
 			"mcp__playwright__browser_evaluate",
+			"mcp__playwright__browser_file_upload",
 			"mcp__playwright__browser_navigate",
 			"mcp__playwright__browser_resize",
 			"mcp__playwright__browser_snapshot",
@@ -53,6 +56,5 @@
 			}
 		]
 	},
-	"enableAllProjectMcpServers": true,
-	"enabledMcpjsonServers": ["svelte"]
+	"enableAllProjectMcpServers": true
 }

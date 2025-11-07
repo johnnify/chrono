@@ -36,7 +36,7 @@
 			Timestamps
 		</Button>
 
-		{#if page.data.user}
+		{#if page.data.userRole !== 'guest'}
 			<Button variant="ghost" href="/profile" aria-label="profile">
 				<UserCircle />
 			</Button>

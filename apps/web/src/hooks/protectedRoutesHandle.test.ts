@@ -34,7 +34,15 @@ describe('protectedRoutesHandle', () => {
 	it('returns a redirect when for regular users trying to get to /admin', async () => {
 		const event = {
 			url: new URL('https://our-origin.com/admin'),
-			locals: {user: {name: 'Not An Admin'}},
+			locals: {
+				session: {
+					id: 'test-session',
+					userId: 'test-user',
+					expiresAt: new Date(),
+					userRole: 'user',
+				},
+				userRole: 'user',
+			},
 		} as RequestEvent
 		const resolve = vi.fn()
 		const result = await protectedRoutesHandle({event, resolve})
@@ -47,7 +55,13 @@ describe('protectedRoutesHandle', () => {
 		const event = {
 			url: new URL('https://our-origin.com/admin'),
 			locals: {
-				user: {name: 'Admin McAdminface', isAdmin: true},
+				session: {
+					id: 'test-session',
+					userId: 'test-user',
+					expiresAt: new Date(),
+					userRole: 'admin',
+				},
+				userRole: 'admin',
 			},
 		} as RequestEvent
 		const resolve = vi.fn()

@@ -1,10 +1,10 @@
 import type {LayoutServerLoad} from './$types'
 
 export const load: LayoutServerLoad = async ({
-	locals: {user, rng},
+	locals: {userRole, rng},
 	request: {headers},
 }) => ({
-	user,
+	userRole,
 	rng,
 	locale: headers.get('Accept-Language')?.split(',')[0] ?? 'en-GB',
 })

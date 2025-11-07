@@ -31,16 +31,6 @@ export const users = sqliteTable(
 export type SelectUser = typeof users.$inferSelect
 export type InsertUser = typeof users.$inferInsert
 
-export const sessions = sqliteTable('sessions', {
-	id: text('id').primaryKey(),
-	userId: text('user_id')
-		.notNull()
-		.references(() => users.id, {onDelete: 'cascade'}),
-	expiresAt: integer('expires_at', {mode: 'timestamp'}).notNull(),
-})
-
-export type Session = typeof sessions.$inferSelect
-
 export const usersProviders = sqliteTable(
 	'users_providers',
 	{

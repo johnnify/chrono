@@ -57,7 +57,7 @@
 
 			{@render titledLineBreak('account')}
 			<ul class="items-center gap-1 pl-2">
-				{#if page.data.user}
+				{#if page.data.userRole !== 'guest'}
 					<li>
 						<Button variant="ghost" href="/profile">
 							<UserCircle />
