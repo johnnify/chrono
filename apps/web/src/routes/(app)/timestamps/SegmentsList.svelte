@@ -1,7 +1,7 @@
 <script lang="ts">
 	import {toast} from 'svelte-sonner'
 	import type {YouTubeSegment} from '$lib/parseCsvToSegments/parseCsvToSegments'
-	import Button from '$lib/components/ui/button/button.svelte'
+	import {Button} from '$lib/components/ui/button'
 	import CopyIcon from '~icons/material-symbols/content-copy'
 	import CheckIcon from '~icons/material-symbols/check'
 
@@ -38,7 +38,7 @@
 
 <div class={className}>
 	<div class="mb-4 flex items-center justify-between">
-		<h2 class="text-lg font-semibold">{title}</h2>
+		<h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">{title}</h2>
 		<Button
 			variant="outline"
 			size="sm"
@@ -61,7 +61,7 @@
 	{:else}
 		<div class="bg-muted border-border rounded-lg border p-4">
 			<div class="space-y-1 font-mono text-sm">
-				{#each segments as segment (segment.timestamp + segment.description)}
+				{#each segments as segment (segment.csvRowIndex)}
 					<div class="flex gap-2">
 						<span class="font-semibold">{segment.timestamp}</span>
 						<span>-</span>

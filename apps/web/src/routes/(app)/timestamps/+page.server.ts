@@ -1,10 +1,14 @@
+import {TEN_MINUTES_IN_SECONDS} from '$lib/constants'
 import type {PageServerLoad} from './$types'
 
-export const load: PageServerLoad = async () => {
+export const load: PageServerLoad = async ({setHeaders}) => {
+	setHeaders({'Cache-Control': `public, max-age=${TEN_MINUTES_IN_SECONDS}`})
+
 	return {
 		meta: {
 			title: 'Timestamps',
-			description: 'Generate YouTube timestamps from your video segments CSV',
+			description:
+				'Generate YouTube timestamps from the CSV exported by your non-linear video editing software!',
 		},
 	}
 }

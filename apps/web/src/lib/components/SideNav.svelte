@@ -65,7 +65,7 @@
 						</Button>
 					</li>
 					<li>
-						<form {...logout}>
+						<form {...logout.for('side-nav')}>
 							<Button variant="ghost" disabled={!!logout.pending}>
 								<LogoutIcon />
 								Sign out

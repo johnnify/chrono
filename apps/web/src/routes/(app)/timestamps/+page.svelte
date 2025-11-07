@@ -1,40 +1,35 @@
 <script lang="ts">
 	import PageTitle from '$lib/components/typography/PageTitle.svelte'
 	import Dropzone from '$lib/components/Dropzone.svelte'
-	import SegmentsList from '$lib/components/SegmentsList.svelte'
 	import {
 		parseCsvToSegments,
+		cutTrimmedSegments,
 		type YouTubeSegment,
 	} from '$lib/parseCsvToSegments/parseCsvToSegments'
+	import {Spinner} from '$lib/components/ui/spinner'
+	import SegmentsList from './SegmentsList.svelte'
+	import RawSegmentsForm from './RawSegmentsForm.svelte'
 
-	let files = $state<File[]>([])
-	let allSegments = $state<YouTubeSegment[]>([])
-	let untrimmedSegments = $state<YouTubeSegment[]>([])
 	let isProcessing = $state(false)
 
-	const handleFilesChange = async (newFiles: File[]) => {
-		files = newFiles
+	let rawSegments = $state<YouTubeSegment[] | null>(null)
+	let trimmedSegments = $derived(
+		rawSegments ? cutTrimmedSegments(rawSegments) : null,
+	)
 
-		if (newFiles.length === 0) {
-			allSegments = []
-			untrimmedSegments = []
+	const handleFilesChange = async (newFiles: File[]) => {
+		if (!newFiles.length) {
+			rawSegments = null
 			return
 		}
-
 		isProcessing = true
 
 		try {
 			const file = newFiles[0]
-			const text = await file.text()
-			const {raw, trimmed} = parseCsvToSegments(text)
-
-			// Convert Maps to arrays
-			allSegments = Array.from(raw.values())
-			untrimmedSegments = Array.from(trimmed.values())
+			const fileText = await file.text()
+			rawSegments = parseCsvToSegments(fileText)
 		} catch (error) {
 			console.error('Error parsing CSV:', error)
-			allSegments = []
-			untrimmedSegments = []
 		} finally {
 			isProcessing = false
 		}
@@ -52,13 +47,13 @@
 	/>
 
 	{#if isProcessing}
-		<div class="text-center">
-			<p class="text-muted-foreground">Processing CSV file...</p>
-		</div>
-	{:else if files.length > 0 && allSegments.length > 0}
+		<Spinner class="size-5" />
+	{:else if rawSegments && trimmedSegments}
 		<div class="grid gap-6 md:grid-cols-2">
-			<SegmentsList segments={allSegments} title="All Segments" />
-			<SegmentsList segments={untrimmedSegments} title="Post-trim Segments" />
+			<SegmentsList segments={rawSegments} title="All Segments" />
+			<SegmentsList segments={trimmedSegments} title="Post-trim Segments" />
 		</div>
+
+		<RawSegmentsForm bind:segments={rawSegments} />
 	{/if}
 </main>

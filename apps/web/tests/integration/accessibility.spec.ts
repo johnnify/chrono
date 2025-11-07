@@ -23,6 +23,14 @@ test.describe('accessibility', () => {
 			expect(accessibilityScanResults.violations).toEqual([])
 		})
 
+		test('`/timestamps` has no accessibility violations', async ({page}) => {
+			await page.goto('/timestamps')
+			await expect(page.getByTestId('hydrated')).toBeVisible()
+
+			const accessibilityScanResults = await new AxeBuilder({page}).analyze()
+			expect(accessibilityScanResults.violations).toEqual([])
+		})
+
 		test('`/profile` has no accessibility violations', async ({page}) => {
 			await page.goto('/profile')
 			await expect(page.getByTestId('hydrated')).toBeVisible()

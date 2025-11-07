@@ -190,14 +190,8 @@
 	ondragover={handleDragOver}
 	ondragleave={handleDragLeave}
 	ondrop={handleDrop}
-	role="button"
-	tabindex={0}
-	onkeydown={(e) => {
-		if (e.key === 'Enter' || e.key === ' ') {
-			e.preventDefault()
-			handleClick()
-		}
-	}}
+	role="region"
+	aria-label="File upload drop zone"
 >
 	<input
 		bind:this={inputRef}

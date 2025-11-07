@@ -1,50 +1,46 @@
 import {describe, expect, it} from 'vitest'
 import {readFileSync} from 'node:fs'
 import {join} from 'node:path'
-import {parseCsvToSegments} from './parseCsvToSegments'
+import {parseCsvToSegments, cutTrimmedSegments} from './parseCsvToSegments'
 
 describe('parseCsvToSegments', () => {
-	it('returns an object with raw and trimmed maps', () => {
+	it('returns an array of YouTubeSegment', () => {
 		const csvPath = join(__dirname, 'test-segments.csv')
 		const csvContent = readFileSync(csvPath, 'utf16le')
 
 		const result = parseCsvToSegments(csvContent)
 
-		expect(result).toHaveProperty('raw')
-		expect(result).toHaveProperty('trimmed')
-		expect(result.raw).toBeInstanceOf(Map)
-		expect(result.trimmed).toBeInstanceOf(Map)
+		expect(Array.isArray(result)).toBe(true)
+		expect(result.length).toBeGreaterThan(0)
 	})
 
-	it('raw map always includes 00:00:00 - Intro as first segment', () => {
+	it('always includes 00:00:00 - Intro as first segment', () => {
 		const csvPath = join(__dirname, 'test-segments.csv')
 		const csvContent = readFileSync(csvPath, 'utf16le')
 
-		const {raw} = parseCsvToSegments(csvContent)
+		const segments = parseCsvToSegments(csvContent)
 
 		// Get first entry
-		const firstEntry = Array.from(raw.entries())[0]
+		const firstSegment = segments[0]
 
-		expect(firstEntry).toBeDefined()
-		expect(firstEntry[1].timestamp).toBe('00:00:00')
-		expect(firstEntry[1].description).toBe('Intro')
-		expect(firstEntry[1].trimmed).toBe(false)
+		expect(firstSegment).toBeDefined()
+		expect(firstSegment?.timestamp).toBe('00:00:00')
+		expect(firstSegment?.description).toBe('Intro')
+		expect(firstSegment?.trimmed).toBe(false)
+		expect(firstSegment?.csvRowIndex).toBe(0)
 	})
 
-	it('raw map parses CSV rows and converts timestamps to YouTube format', () => {
+	it('parses CSV rows and converts timestamps to YouTube format', () => {
 		const csvPath = join(__dirname, 'test-segments.csv')
 		const csvContent = readFileSync(csvPath, 'utf16le')
 
-		const {raw} = parseCsvToSegments(csvContent)
-
-		// Convert to array for easier testing
-		const segmentArray = Array.from(raw.values())
+		const segments = parseCsvToSegments(csvContent)
 
 		// Should have more than just the intro
-		expect(segmentArray.length).toBeGreaterThan(1)
+		expect(segments.length).toBeGreaterThan(1)
 
 		// Check for a specific segment from the CSV
-		const introSegment = segmentArray.find((s) =>
+		const introSegment = segments.find((s) =>
 			s.description.includes('astra award victory lap'),
 		)
 		expect(introSegment).toBeDefined()
@@ -52,15 +48,14 @@ describe('parseCsvToSegments', () => {
 		expect(introSegment?.description).toBe('intro - astra award victory lap')
 	})
 
-	it('raw map marks segments with "ad break" as trimmed', () => {
+	it('marks segments with "ad break" as trimmed', () => {
 		const csvPath = join(__dirname, 'test-segments.csv')
 		const csvContent = readFileSync(csvPath, 'utf16le')
 
-		const {raw} = parseCsvToSegments(csvContent)
-		const segmentArray = Array.from(raw.values())
+		const segments = parseCsvToSegments(csvContent)
 
 		// Find the "ad break" segment (search in description)
-		const adBreakSegment = segmentArray.find((s) => {
+		const adBreakSegment = segments.find((s) => {
 			const lower = s.description.toLowerCase()
 			return lower.includes('ad break') || lower.startsWith('ad break')
 		})
@@ -70,15 +65,14 @@ describe('parseCsvToSegments', () => {
 		expect(adBreakSegment?.description).toContain('ad break')
 	})
 
-	it('raw map marks segments with "ad" in name as trimmed', () => {
+	it('marks segments with "ad" in name as trimmed', () => {
 		const csvPath = join(__dirname, 'test-segments.csv')
 		const csvContent = readFileSync(csvPath, 'utf16le')
 
-		const {raw} = parseCsvToSegments(csvContent)
-		const segmentArray = Array.from(raw.values())
+		const segments = parseCsvToSegments(csvContent)
 
 		// Find the "uncommon goods ad" segment
-		const uncommonGoodsAd = segmentArray.find((s) =>
+		const uncommonGoodsAd = segments.find((s) =>
 			s.description.includes('uncommon goods ad'),
 		)
 
@@ -86,7 +80,7 @@ describe('parseCsvToSegments', () => {
 		expect(uncommonGoodsAd?.trimmed).toBe(true)
 	})
 
-	it('raw map does not mark segments with "ad" as part of other words as trimmed', () => {
+	it('does not mark segments with "ad" as part of other words as trimmed', () => {
 		// Test that words like "addressing", "roadmap", "iad" don't trigger trimming
 		const testCsv = [
 			'Marker Name\tDescription\tIn\tOut\tDuration',
@@ -95,26 +89,23 @@ describe('parseCsvToSegments', () => {
 			'nomad lifestyle\t\t00:03:00:00\t00:03:00:00\t00:00:00:00',
 		].join('\n')
 
-		const {raw} = parseCsvToSegments(testCsv)
-		const segmentArray = Array.from(raw.values())
+		const segments = parseCsvToSegments(testCsv)
 
 		// None of these should be trimmed
-		const addressingSegment = segmentArray.find((s) =>
+		const addressingSegment = segments.find((s) =>
 			s.description.includes('addressing'),
 		)
-		const roadmapSegment = segmentArray.find((s) =>
+		const roadmapSegment = segments.find((s) =>
 			s.description.includes('roadmap'),
 		)
-		const nomadSegment = segmentArray.find((s) =>
-			s.description.includes('nomad'),
-		)
+		const nomadSegment = segments.find((s) => s.description.includes('nomad'))
 
 		expect(addressingSegment?.trimmed).toBe(false)
 		expect(roadmapSegment?.trimmed).toBe(false)
 		expect(nomadSegment?.trimmed).toBe(false)
 	})
 
-	it('raw map does not mark segments with "ad end" as trimmed', () => {
+	it('does not mark segments with "ad end" as trimmed', () => {
 		// "ad end" markers should NOT be considered as ads to be trimmed
 		const testCsv = [
 			'Marker Name\tDescription\tIn\tOut\tDuration',
@@ -123,13 +114,12 @@ describe('parseCsvToSegments', () => {
 			'content continues\t\t00:02:30:00\t00:03:00:00\t00:00:30:00',
 		].join('\n')
 
-		const {raw} = parseCsvToSegments(testCsv)
-		const segmentArray = Array.from(raw.values())
+		const segments = parseCsvToSegments(testCsv)
 
-		const adBreakSegment = segmentArray.find((s) =>
+		const adBreakSegment = segments.find((s) =>
 			s.description.toLowerCase().includes('ad break'),
 		)
-		const adEndSegment = segmentArray.find((s) =>
+		const adEndSegment = segments.find((s) =>
 			s.description.toLowerCase().includes('ad end'),
 		)
 
@@ -140,7 +130,30 @@ describe('parseCsvToSegments', () => {
 		expect(adEndSegment?.trimmed).toBe(false)
 	})
 
-	it('trimmed map excludes segments marked as trimmed', () => {
+	it('includes csvRowIndex for each segment', () => {
+		const testCsv = [
+			'Marker Name\tDescription\tIn\tOut\tDuration',
+			'intro\tWelcome\t00:00:00:00\t00:01:00:00\t00:01:00:00',
+			'content\tMain topic\t00:02:00:00\t00:03:00:00\t00:01:00:00',
+		].join('\n')
+
+		const segments = parseCsvToSegments(testCsv)
+
+		// Intro segment has csvRowIndex 0
+		expect(segments[0]?.csvRowIndex).toBe(0)
+
+		// First parsed segment should have csvRowIndex 1
+		const firstParsed = segments.find((s) => s.description.includes('Welcome'))
+		expect(firstParsed?.csvRowIndex).toBe(1)
+
+		// Second parsed segment should have csvRowIndex 2
+		const secondParsed = segments.find((s) => s.description.includes('Main'))
+		expect(secondParsed?.csvRowIndex).toBe(2)
+	})
+})
+
+describe('cutTrimmedSegments', () => {
+	it('excludes segments marked as trimmed', () => {
 		const testCsv = [
 			'Marker Name\tDescription\tIn\tOut\tDuration',
 			'intro\tWelcome\t00:00:00:00\t00:01:00:00\t00:01:00:00',
@@ -148,23 +161,23 @@ describe('parseCsvToSegments', () => {
 			'content\tMain topic\t00:02:00:00\t00:03:00:00\t00:01:00:00',
 		].join('\n')
 
-		const {raw, trimmed} = parseCsvToSegments(testCsv)
+		const raw = parseCsvToSegments(testCsv)
+		const trimmed = cutTrimmedSegments(raw)
 
 		// Raw should have 4 segments (intro row + 3 parsed)
-		expect(raw.size).toBe(4)
+		expect(raw.length).toBe(4)
 
 		// Trimmed should have 3 segments (intro row + intro + content, minus ad break)
-		expect(trimmed.size).toBe(3)
+		expect(trimmed.length).toBe(3)
 
 		// Verify ad break is not in trimmed
-		const trimmedArray = Array.from(trimmed.values())
-		const hasAdBreak = trimmedArray.some((s) =>
+		const hasAdBreak = trimmed.some((s) =>
 			s.description.toLowerCase().includes('ad break'),
 		)
 		expect(hasAdBreak).toBe(false)
 	})
 
-	it('trimmed map adjusts timestamps when segments are removed', () => {
+	it('adjusts timestamps when segments are removed', () => {
 		// Create a CSV with an ad segment in the middle
 		// Segment 1: 00:00:00 - Welcome
 		// Segment 2: 00:02:00 - Ad (should be removed, duration = 1 minute)
@@ -178,19 +191,17 @@ describe('parseCsvToSegments', () => {
 			'outro\t\t00:05:00:00\t00:06:00:00\t00:01:00:00',
 		].join('\n')
 
-		const {trimmed} = parseCsvToSegments(testCsv)
-		const trimmedArray = Array.from(trimmed.values())
+		const raw = parseCsvToSegments(testCsv)
+		const trimmed = cutTrimmedSegments(raw)
 
 		// Find the segments in trimmed
-		const welcomeSegment = trimmedArray.find((s) =>
+		const welcomeSegment = trimmed.find((s) =>
 			s.description.includes('welcome'),
 		)
-		const contentSegment = trimmedArray.find((s) =>
+		const contentSegment = trimmed.find((s) =>
 			s.description.includes('main content'),
 		)
-		const outroSegment = trimmedArray.find((s) =>
-			s.description.includes('outro'),
-		)
+		const outroSegment = trimmed.find((s) => s.description.includes('outro'))
 
 		// Welcome should stay at 00:00:00
 		expect(welcomeSegment?.timestamp).toBe('00:00:00')
@@ -202,7 +213,7 @@ describe('parseCsvToSegments', () => {
 		expect(outroSegment?.timestamp).toBe('00:04:00')
 	})
 
-	it('trimmed map adjusts timestamps with multiple removed segments', () => {
+	it('adjusts timestamps with multiple removed segments', () => {
 		// Create a CSV with multiple ad segments
 		// Segment 1: 00:00:00 - Intro
 		// Segment 2: 00:01:00 - Ad 1 (duration = 30 seconds)
@@ -218,18 +229,14 @@ describe('parseCsvToSegments', () => {
 			'outro\t\t00:04:00:00\t00:05:00:00\t00:01:00:00',
 		].join('\n')
 
-		const {trimmed} = parseCsvToSegments(testCsv)
-		const trimmedArray = Array.from(trimmed.values())
+		const raw = parseCsvToSegments(testCsv)
+		const trimmed = cutTrimmedSegments(raw)
 
-		const introSegment = trimmedArray.find((s) =>
-			s.description.includes('intro'),
-		)
-		const contentSegment = trimmedArray.find((s) =>
+		const introSegment = trimmed.find((s) => s.description.includes('intro'))
+		const contentSegment = trimmed.find((s) =>
 			s.description.includes('content'),
 		)
-		const outroSegment = trimmedArray.find((s) =>
-			s.description.includes('outro'),
-		)
+		const outroSegment = trimmed.find((s) => s.description.includes('outro'))
 
 		// Intro should stay at 00:00:00
 		expect(introSegment?.timestamp).toBe('00:00:00')
@@ -241,18 +248,19 @@ describe('parseCsvToSegments', () => {
 		expect(outroSegment?.timestamp).toBe('00:02:30')
 	})
 
-	it('trimmed map includes the intro segment', () => {
+	it('includes the intro segment', () => {
 		const csvPath = join(__dirname, 'test-segments.csv')
 		const csvContent = readFileSync(csvPath, 'utf16le')
 
-		const {trimmed} = parseCsvToSegments(csvContent)
+		const raw = parseCsvToSegments(csvContent)
+		const trimmed = cutTrimmedSegments(raw)
 
 		// Get first entry
-		const firstEntry = Array.from(trimmed.entries())[0]
+		const firstSegment = trimmed[0]
 
-		expect(firstEntry).toBeDefined()
-		expect(firstEntry[1].timestamp).toBe('00:00:00')
-		expect(firstEntry[1].description).toBe('Intro')
-		expect(firstEntry[1].trimmed).toBe(false)
+		expect(firstSegment).toBeDefined()
+		expect(firstSegment?.timestamp).toBe('00:00:00')
+		expect(firstSegment?.description).toBe('Intro')
+		expect(firstSegment?.trimmed).toBe(false)
 	})
 })

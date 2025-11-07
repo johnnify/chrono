@@ -41,7 +41,7 @@
 		<SectionTitle>Session Management</SectionTitle>
 		<p>You are logged in as <strong>{data.user.email}</strong></p>
 
-		<form {...logout}>
+		<form {...logout.for('profile')}>
 			<Button variant="outline" disabled={!!logout.pending}>
 				<LogoutIcon />
 				Sign out

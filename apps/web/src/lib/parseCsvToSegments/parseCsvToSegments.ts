@@ -2,6 +2,7 @@ export type YouTubeSegment = {
 	timestamp: string
 	description: string
 	trimmed: boolean
+	csvRowIndex: number
 }
 
 type CsvColumnIndices = {
@@ -17,11 +18,12 @@ type CsvRow = {
 }
 
 // Constants
-const INTRO_SEGMENT = {
+const INTRO_SEGMENT: YouTubeSegment = {
 	timestamp: '00:00:00',
 	description: 'Intro',
 	trimmed: false,
-} as const
+	csvRowIndex: 0,
+}
 
 const MIN_MARKER_NAME_LENGTH = 2
 
@@ -126,7 +128,10 @@ const mergeMultiLineFields = (lines: string[], startIndex: number): string => {
 	return mergedLine
 }
 
-const createYouTubeSegment = (row: CsvRow): YouTubeSegment => {
+const createYouTubeSegment = (
+	row: CsvRow,
+	csvRowIndex: number,
+): YouTubeSegment => {
 	const {markerName, description, timestamp} = row
 
 	const fullDescription = description
@@ -140,43 +145,37 @@ const createYouTubeSegment = (row: CsvRow): YouTubeSegment => {
 		timestamp: youtubeTimestamp,
 		description: fullDescription,
 		trimmed: isTrimmed,
+		csvRowIndex,
 	}
 }
 
-type ParseResult = {
-	raw: Map<string, YouTubeSegment>
-	trimmed: Map<string, YouTubeSegment>
-}
-
-// Create trimmed map with adjusted timestamps
-const createTrimmedMap = (
-	rawSegments: Map<string, YouTubeSegment>,
-): Map<string, YouTubeSegment> => {
-	const trimmed = new Map<string, YouTubeSegment>()
-	const segmentArray = Array.from(rawSegments.entries())
-
+// Create segments with adjusted timestamps after trimming
+export const cutTrimmedSegments = (
+	rawSegments: YouTubeSegment[],
+): YouTubeSegment[] => {
+	const trimmed: YouTubeSegment[] = []
 	let cumulativeAdjustment = 0
 
-	for (let i = 0; i < segmentArray.length; i++) {
-		const [key, segment] = segmentArray[i]!
+	for (let i = 0; i < rawSegments.length; i++) {
+		const segment = rawSegments[i]!
 
 		if (segment.trimmed) {
 			// Calculate duration of this trimmed segment
 			const currentSeconds = timestampToSeconds(segment.timestamp)
-			const nextSegment = segmentArray[i + 1]
+			const nextSegment = rawSegments[i + 1]
 			if (nextSegment) {
-				const nextSeconds = timestampToSeconds(nextSegment[1].timestamp)
+				const nextSeconds = timestampToSeconds(nextSegment.timestamp)
 				const duration = nextSeconds - currentSeconds
 				cumulativeAdjustment += duration
 			}
-			// Skip this segment - don't add it to trimmed map
+			// Skip this segment - don't add it to trimmed array
 		} else {
 			// Include this segment with adjusted timestamp
 			const originalSeconds = timestampToSeconds(segment.timestamp)
 			const adjustedSeconds = originalSeconds - cumulativeAdjustment
 			const adjustedTimestamp = secondsToTimestamp(adjustedSeconds)
 
-			trimmed.set(key, {
+			trimmed.push({
 				...segment,
 				timestamp: adjustedTimestamp,
 			})
@@ -186,18 +185,15 @@ const createTrimmedMap = (
 	return trimmed
 }
 
-export const parseCsvToSegments = (csvContent: string): ParseResult => {
-	const segments = new Map<string, YouTubeSegment>()
+export const parseCsvToSegments = (csvContent: string): YouTubeSegment[] => {
+	const segments: YouTubeSegment[] = []
 
 	// Always start with the intro segment
-	segments.set('intro-row', INTRO_SEGMENT)
+	segments.push(INTRO_SEGMENT)
 
 	const lines = csvContent.split('\n')
 	if (lines.length === 0) {
-		return {
-			raw: segments,
-			trimmed: new Map(segments),
-		}
+		return segments
 	}
 
 	// Parse header to find column positions
@@ -205,6 +201,7 @@ export const parseCsvToSegments = (csvContent: string): ParseResult => {
 
 	// Parse data rows with multi-line field support
 	let i = 1
+	let csvRowIndex = 1
 	while (i < lines.length) {
 		const line = lines[i]
 
@@ -221,21 +218,19 @@ export const parseCsvToSegments = (csvContent: string): ParseResult => {
 		const rowData = extractRowData(mergedLine, indices)
 		if (!rowData || !isValidRow(rowData)) {
 			i++
+			csvRowIndex++
 			continue
 		}
 
 		// Create and store segment
-		const segment = createYouTubeSegment(rowData)
-		const key = `${segment.timestamp}-${rowData.markerName}`
-		segments.set(key, segment)
+		const segment = createYouTubeSegment(rowData, csvRowIndex)
+		segments.push(segment)
 
 		// Skip any lines that were merged
 		const linesMerged = (mergedLine.match(/\n/g) || []).length
 		i += linesMerged + 1
+		csvRowIndex++
 	}
 
-	return {
-		raw: segments,
-		trimmed: createTrimmedMap(segments),
-	}
+	return segments
 }
