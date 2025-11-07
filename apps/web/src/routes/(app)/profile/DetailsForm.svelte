@@ -1,20 +1,22 @@
 <script lang="ts">
 	import {toast} from 'svelte-sonner'
 
-	import {page} from '$app/state'
 	import {Input} from '$lib/components/ui/input'
 	import * as Field from '$lib/components/ui/field'
 	import {Button} from '$lib/components/ui/button'
 	import {Spinner} from '$lib/components/ui/spinner'
+	import type {User} from '$lib/repos/users/UsersRepoInterface'
 	import {updateProfile} from './profile.remote'
 
-	let hasChanges = $derived(
-		updateProfile.fields.name.value() !== page.data.user?.name,
-	)
+	type Props = {
+		user: User
+	}
 
-	// HACK: Causes a flick from placeholder to this...
-	// There must be a better way to prefill form data in the future!
-	updateProfile.fields.name.set(page.data.user?.name || '')
+	let {user}: Props = $props()
+
+	let hasChanges = $derived(updateProfile.fields.name.value() !== user.name)
+
+	updateProfile.fields.name.set(user.name)
 </script>
 
 <form

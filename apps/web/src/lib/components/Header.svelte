@@ -31,9 +31,9 @@
 	</div>
 
 	<nav aria-label="Header" class="flex">
-		<Button class="hidden sm:flex" variant="ghost" href="/timestamps">
+		<Button variant="ghost" href="/timestamps">
 			<TimestampsIcon />
-			Timestamps
+			<span class="sr-only sm:not-sr-only">Timestamps</span>
 		</Button>
 
 		{#if page.data.userRole !== 'guest'}
@@ -43,7 +43,7 @@
 		{:else}
 			<Button variant="ghost" href="/login">
 				<LoginIcon />
-				Log in
+				<span class="sr-only sm:not-sr-only">Log in</span>
 			</Button>
 		{/if}
 	</nav>

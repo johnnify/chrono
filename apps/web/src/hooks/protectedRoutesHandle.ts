@@ -1,7 +1,7 @@
 import {type Handle} from '@sveltejs/kit'
 import {building} from '$app/environment'
 
-const protectedRoutePrefixes = ['/admin']
+const protectedRoutePrefixes = ['/admin', '/profile']
 export const isProtectedRoute = (pathname: string) =>
 	protectedRoutePrefixes.some((prefix) => pathname.startsWith(prefix))
 

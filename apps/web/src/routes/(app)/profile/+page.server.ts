@@ -7,13 +7,7 @@ export const load: PageServerLoad = async ({locals}) => {
 		error(401, 'Somehow, you are not logged in')
 	}
 
-	const user = await locals.usersRepo.getUserById(locals.session.userId)
-	if (!user) {
-		error(401, 'User not found')
-	}
-
 	return {
-		user,
 		meta: {
 			title: 'Profile',
 			description: 'See & manage your profile',
