@@ -25,7 +25,7 @@ jobs:
       - name: Run E2E tests against production
         run: pnpm test:e2e
         env:
-          PUBLIC_ROOT_URL: https://chrono.johnnify.com/
+          PUBLIC_ROOT_URL: https://chrono.j-e7c.workers.dev/
       - uses: actions/upload-artifact@v4
         if: always()
         with:
