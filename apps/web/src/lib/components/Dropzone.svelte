@@ -113,6 +113,10 @@
 		}
 		files = files.filter((_, i) => i !== index)
 
+		if (!files.length && inputRef) {
+			inputRef.value = ''
+		}
+
 		if (onFilesChange) {
 			onFilesChange(files.map((f) => f.file))
 		}
