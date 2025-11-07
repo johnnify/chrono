@@ -34,17 +34,20 @@
 			toast.error('Failed to copy to clipboard')
 		}
 	}
+
+	let id = $derived(`${title.toLowerCase().replace(/\s+/g, '-')}-heading`)
 </script>
 
-<div class={className}>
+<section class={className} aria-labelledby={id}>
 	<div class="mb-4 flex items-center justify-between">
-		<h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">{title}</h2>
+		<h2 {id} class="scroll-m-20 text-2xl font-semibold tracking-tight">
+			{title}
+		</h2>
 		<Button
 			variant="outline"
 			size="sm"
 			onclick={copyToClipboard}
 			disabled={segments.length === 0}
-			aria-label="Copy segments to clipboard"
 		>
 			{#if justCopied}
 				<CheckIcon />
@@ -60,15 +63,15 @@
 		<p class="text-muted-foreground text-sm italic">No segments to display</p>
 	{:else}
 		<div class="bg-muted border-border rounded-lg border p-4">
-			<div class="space-y-1 font-mono text-sm">
+			<ul class="space-y-1 font-mono text-sm">
 				{#each segments as segment (segment.csvRowIndex)}
-					<div class="flex gap-2">
+					<li class="flex gap-2">
 						<span class="font-semibold">{segment.timestamp}</span>
 						<span>-</span>
 						<span class="flex-1">{segment.description}</span>
-					</div>
+					</li>
 				{/each}
-			</div>
+			</ul>
 		</div>
 	{/if}
-</div>
+</section>

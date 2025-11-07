@@ -12,7 +12,7 @@
 
 <h2
 	class={cn(
-		'scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight first:mt-0',
+		'border-border scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight first:mt-0',
 		className,
 	)}
 	{...restProps}

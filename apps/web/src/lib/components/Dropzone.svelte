@@ -184,9 +184,9 @@
 
 <div
 	class={cn(
-		'bg-card text-foreground border-border rounded-lg border-2 p-6 text-center transition-colors duration-300',
+		'bg-card text-card-foreground border-border rounded-lg border p-6 text-center',
 		className,
-		files.length > 0 ? 'border-solid' : 'border-dashed',
+		files.length > 0 ? 'border-solid' : 'border-2 border-dashed',
 		isDragActive && 'border-primary bg-primary/10',
 		isInvalid && 'border-destructive bg-destructive/10',
 	)}
@@ -209,7 +209,7 @@
 
 	{#if files.length === 0}
 		<!-- Empty State -->
-		<div class="flex flex-col items-center gap-y-2">
+		<div class="flex flex-col items-center gap-y-2 py-1">
 			<CsvIcon class="text-muted-foreground size-5" />
 			<p class="text-sm">
 				Drop CSV {!!maxFiles && maxFiles > 1 ? ` ${maxFiles}` : ''} file{!maxFiles ||

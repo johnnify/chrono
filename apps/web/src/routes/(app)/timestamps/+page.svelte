@@ -1,4 +1,5 @@
 <script lang="ts">
+	import {fade, fly} from 'svelte/transition'
 	import {toast} from 'svelte-sonner'
 	import PageTitle from '$lib/components/typography/PageTitle.svelte'
 	import Dropzone from '$lib/components/Dropzone.svelte'
@@ -52,11 +53,13 @@
 	{#if isProcessing}
 		<Spinner class="size-5" />
 	{:else if rawSegments && trimmedSegments}
-		<div class="grid gap-6 md:grid-cols-2">
-			<SegmentsList segments={rawSegments} title="All Segments" />
-			<SegmentsList segments={trimmedSegments} title="Post-trim Segments" />
-		</div>
+		<div in:fly={{duration: 300, y: 100}} out:fade={{duration: 100}}>
+			<div class="mb-6 grid gap-6 md:grid-cols-2">
+				<SegmentsList segments={rawSegments} title="All Segments" />
+				<SegmentsList segments={trimmedSegments} title="Post-trim Segments" />
+			</div>
 
-		<RawSegmentsForm bind:segments={rawSegments} />
+			<RawSegmentsForm bind:segments={rawSegments} />
+		</div>
 	{/if}
 </main>
