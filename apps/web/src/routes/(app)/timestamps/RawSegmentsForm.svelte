@@ -13,41 +13,45 @@
 </script>
 
 <SectionTitle>Edit Segments</SectionTitle>
-<div class="grid gap-2">
+<ul class="grid gap-2">
 	{#each segments as segment (segment.csvRowIndex)}
-		<Field.Group>
-			<div class="grid grid-cols-6 gap-4">
-				<Field.Field class="flex-row items-center">
-					<Field.Label class="sr-only" for="timestamp-{segment.csvRowIndex}"
-						>Timestamp</Field.Label
-					>
-					<Input
-						bind:value={segment.timestamp}
-						id="timestamp-{segment.csvRowIndex}"
-						type="text"
-						placeholder="00:00:00"
-					/>
-				</Field.Field>
-				<Field.Field class="col-span-4 flex-row items-center">
-					<Field.Label class="sr-only" for="description-{segment.csvRowIndex}"
-						>Description</Field.Label
-					>
-					<Input
-						id="description-{segment.csvRowIndex}"
-						type="text"
-						placeholder="Get a load of this!"
-						bind:value={segment.description}
-					/>
-				</Field.Field>
+		<li>
+			<Field.Group>
+				<div class="grid grid-cols-6 gap-4">
+					<Field.Field class="flex-row items-center">
+						<Field.Label class="sr-only" for="timestamp-{segment.csvRowIndex}"
+							>Timestamp</Field.Label
+						>
+						<Input
+							bind:value={segment.timestamp}
+							id="timestamp-{segment.csvRowIndex}"
+							type="text"
+							placeholder="00:00:00"
+						/>
+					</Field.Field>
+					<Field.Field class="col-span-4 flex-row items-center">
+						<Field.Label class="sr-only" for="description-{segment.csvRowIndex}"
+							>Description</Field.Label
+						>
+						<Input
+							id="description-{segment.csvRowIndex}"
+							type="text"
+							placeholder="Get a load of this!"
+							bind:value={segment.description}
+						/>
+					</Field.Field>
 
-				<div class="flex items-center space-x-2">
-					<Switch
-						id="trimmed-{segment.csvRowIndex}"
-						bind:checked={segment.trimmed}
-					/>
-					<Field.Label for="trimmed-{segment.csvRowIndex}">Trimmed</Field.Label>
+					<div class="flex items-center space-x-2">
+						<Switch
+							id="trimmed-{segment.csvRowIndex}"
+							bind:checked={segment.trimmed}
+						/>
+						<Field.Label for="trimmed-{segment.csvRowIndex}"
+							>Trimmed</Field.Label
+						>
+					</div>
 				</div>
-			</div>
-		</Field.Group>
+			</Field.Group>
+		</li>
 	{/each}
-</div>
+</ul>

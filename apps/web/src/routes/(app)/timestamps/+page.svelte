@@ -1,4 +1,5 @@
 <script lang="ts">
+	import {toast} from 'svelte-sonner'
 	import PageTitle from '$lib/components/typography/PageTitle.svelte'
 	import Dropzone from '$lib/components/Dropzone.svelte'
 	import {
@@ -6,6 +7,7 @@
 		cutTrimmedSegments,
 		type YouTubeSegment,
 	} from '$lib/parseCsvToSegments/parseCsvToSegments'
+	import {decodeFile} from '$lib/parseCsvToSegments/decodeFile'
 	import {Spinner} from '$lib/components/ui/spinner'
 	import SegmentsList from './SegmentsList.svelte'
 	import RawSegmentsForm from './RawSegmentsForm.svelte'
@@ -25,11 +27,12 @@
 		isProcessing = true
 
 		try {
-			const file = newFiles[0]
-			const fileText = await file.text()
+			const [file] = newFiles
+			const arrayBuffer = await file.arrayBuffer()
+			const fileText = decodeFile(arrayBuffer)
 			rawSegments = parseCsvToSegments(fileText)
 		} catch (error) {
-			console.error('Error parsing CSV:', error)
+			toast.error('Failed to parse your file... Check it & try again?')
 		} finally {
 			isProcessing = false
 		}
