@@ -10,7 +10,7 @@
 		{
 			"binding": "DB",
 			"database_name": "chrono",
-			"database_id": "TODO:REPLACE_WITH_NEW_D1",
+			"database_id": "78f63d0e-4ecf-497c-ac7f-b67f3990fa58",
 			"migrations_dir": "drizzle",
 		},
 	],
