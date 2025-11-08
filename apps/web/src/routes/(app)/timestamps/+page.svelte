@@ -2,13 +2,12 @@
 	import {fade, fly} from 'svelte/transition'
 	import {toast} from 'svelte-sonner'
 	import PageTitle from '$lib/components/typography/PageTitle.svelte'
-	import Dropzone from '$lib/components/Dropzone.svelte'
+	import Dropzone, {type FileWithPreview} from '$lib/components/Dropzone.svelte'
 	import {
 		parseCsvToSegments,
 		cutTrimmedSegments,
 		type YouTubeSegment,
 	} from '$lib/parseCsvToSegments/parseCsvToSegments'
-	import {decodeFile} from '$lib/parseCsvToSegments/decodeFile'
 	import {Spinner} from '$lib/components/ui/spinner'
 	import SegmentsList from './SegmentsList.svelte'
 	import RawSegmentsForm from './RawSegmentsForm.svelte'
@@ -20,15 +19,15 @@
 		rawSegments ? cutTrimmedSegments(rawSegments) : null,
 	)
 
-	const handleFilesChange = async (newFiles: File[]) => {
-		if (!newFiles.length) {
+	const handleFileChange = async (fileWithPreview: FileWithPreview | null) => {
+		if (!fileWithPreview || fileWithPreview.error) {
 			rawSegments = null
 			return
 		}
+		const {file} = fileWithPreview
 		isProcessing = true
 
 		try {
-			const [file] = newFiles
 			rawSegments = await parseCsvToSegments(file)
 		} catch (error) {
 			toast.error('Failed to parse your file... Check it & try again?')
@@ -38,15 +37,10 @@
 	}
 </script>
 
-<main class="container flex flex-col gap-6">
+<main class="container flex flex-col gap-8">
 	<PageTitle>CSV to Timestamps</PageTitle>
 
-	<Dropzone
-		maxFiles={1}
-		accept=".csv"
-		maxFileSize={Number.POSITIVE_INFINITY}
-		onFilesChange={handleFilesChange}
-	/>
+	<Dropzone accept=".csv" onFileChange={handleFileChange} />
 
 	{#if isProcessing}
 		<Spinner class="size-5" />
