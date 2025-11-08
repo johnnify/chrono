@@ -121,8 +121,12 @@ describe('decodeFile', () => {
 	})
 
 	it('decodes the actual test-segments.csv file', () => {
-		const csvPath = join(__dirname, 'test-segments.csv')
-		const buffer = readFileSync(csvPath).buffer
+		const csvPath = join(import.meta.dirname, 'test-segments.csv')
+		const nodeBuffer = readFileSync(csvPath)
+		const buffer = nodeBuffer.buffer.slice(
+			nodeBuffer.byteOffset,
+			nodeBuffer.byteOffset + nodeBuffer.byteLength,
+		)
 
 		const result = decodeFile(buffer)
 
@@ -133,5 +137,26 @@ describe('decodeFile', () => {
 		expect(result).toContain('ad break')
 		expect(result).toContain('uncommon goods ad')
 		expect(result.split('\n').length).toBeGreaterThan(10)
+	})
+
+	it('decodes the Google Sheets CSV file', () => {
+		const csvPath = join(import.meta.dirname, 'google-sheets-export.csv')
+		const nodeBuffer = readFileSync(csvPath)
+		const buffer = nodeBuffer.buffer.slice(
+			nodeBuffer.byteOffset,
+			nodeBuffer.byteOffset + nodeBuffer.byteLength,
+		)
+
+		const result = decodeFile(buffer)
+
+		expect(result).toContain('Marker Name')
+		expect(result).toContain('Description')
+		expect(result).toContain('Intro')
+		expect(result).toContain('hello & welcome')
+		expect(result).toContain('Johnnify Premium ad')
+		expect(result).toContain('Importing ⬆️ excel files')
+		expect(result).toContain('Amazing 💜 UI')
+		expect(result).toContain('Downloading ⬇️ CSV')
+		expect(result.split('\n').length).toBe(8)
 	})
 })

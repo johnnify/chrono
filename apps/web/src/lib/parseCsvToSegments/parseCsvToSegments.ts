@@ -1,3 +1,6 @@
+import Papa from 'papaparse'
+import {decodeFile} from './decodeFile'
+
 export type YouTubeSegment = {
 	timestamp: string
 	description: string
@@ -5,16 +8,15 @@ export type YouTubeSegment = {
 	csvRowIndex: number
 }
 
-type CsvColumnIndices = {
-	markerName: number
-	description: number
-	timestamp: number
-}
-
-type CsvRow = {
-	markerName: string
-	description: string
-	timestamp: string
+// Common export columns from Non-Liner Editing software,
+// but with lowercased and trimmed keys: Papaparse can do this easily
+export type CsvRow = {
+	'marker name'?: string
+	description?: string
+	in?: string
+	out?: string
+	duration?: string
+	'marker type'?: string
 }
 
 // Constants
@@ -24,8 +26,6 @@ const INTRO_SEGMENT: YouTubeSegment = {
 	trimmed: false,
 	csvRowIndex: 0,
 }
-
-const MIN_MARKER_NAME_LENGTH = 2
 
 const AD_REGEX = /(?:^|\s)ad(?!\s*end)(?:\s|$)/i
 
@@ -60,79 +60,22 @@ const convertTimestampToYouTubeFormat = (timestamp: string): string => {
 	const paddedMinutes = minutes.toString().padStart(2, '0')
 	const paddedSeconds = seconds.toString().padStart(2, '0')
 
-	// Always format as HH:MM:SS
 	return `${paddedHours}:${paddedMinutes}:${paddedSeconds}`
 }
 
-const parseHeaderIndices = (headerLine: string): CsvColumnIndices => {
-	const columns = headerLine.split('\t')
-
-	return {
-		markerName: columns.findIndex((col) =>
-			col.toLowerCase().includes('marker name'),
-		),
-		description: columns.findIndex((col) =>
-			col.toLowerCase().includes('description'),
-		),
-		timestamp: columns.findIndex((col) => col.toLowerCase().trim() === 'in'),
-	}
-}
-
-const extractRowData = (
-	line: string,
-	indices: CsvColumnIndices,
-): CsvRow | null => {
-	const columns = line.split('\t')
-
-	const markerName = columns[indices.markerName]?.trim() || ''
-	let description = columns[indices.description]?.trim() || ''
-	const timestamp = columns[indices.timestamp]?.trim() || ''
-
-	// Clean up newlines and carriage returns
-	description = description.replace(/[\r\n]+/g, ' ').trim()
-
-	return {
-		markerName,
-		description,
-		timestamp,
-	}
-}
-
-// Validate if a row has required data
 const isValidRow = (row: CsvRow): boolean => {
-	const {markerName, timestamp} = row
+	const timestamp = row.in?.trim() || ''
 
-	return (
-		markerName.length >= MIN_MARKER_NAME_LENGTH &&
-		timestamp.length > 0 &&
-		/[a-zA-Z]/.test(markerName)
-	)
-}
-
-// Merge multi-line CSV fields (handles quoted fields with newlines)
-const mergeMultiLineFields = (lines: string[], startIndex: number): string => {
-	let mergedLine = lines[startIndex] || ''
-	let currentIndex = startIndex
-
-	// Check if next lines are continuations of a quoted field
-	while (currentIndex + 1 < lines.length) {
-		const nextLine = lines[currentIndex + 1] || ''
-		if (nextLine.match(/^"\t/)) {
-			currentIndex++
-			mergedLine = mergedLine + '\n' + nextLine
-		} else {
-			break
-		}
-	}
-
-	return mergedLine
+	return timestamp.length > 0
 }
 
 const createYouTubeSegment = (
 	row: CsvRow,
 	csvRowIndex: number,
 ): YouTubeSegment => {
-	const {markerName, description, timestamp} = row
+	const markerName = row['marker name']?.trim() || ''
+	const description = row.description?.trim() || ''
+	const timestamp = row.in?.trim() || ''
 
 	const fullDescription = description
 		? `${markerName} - ${description}`
@@ -160,7 +103,9 @@ export const cutTrimmedSegments = (
 		const segment = rawSegments[i]!
 
 		if (segment.trimmed) {
-			// Calculate duration of this trimmed segment
+			// We "skip" trimmed segments,
+			// but still need to calculate their duration
+			// to adjust following segments accordingly
 			const currentSeconds = timestampToSeconds(segment.timestamp)
 			const nextSegment = rawSegments[i + 1]
 			if (nextSegment) {
@@ -168,7 +113,6 @@ export const cutTrimmedSegments = (
 				const duration = nextSeconds - currentSeconds
 				cumulativeAdjustment += duration
 			}
-			// Skip this segment - don't add it to trimmed array
 		} else {
 			// Include this segment with adjusted timestamp
 			const originalSeconds = timestampToSeconds(segment.timestamp)
@@ -185,52 +129,40 @@ export const cutTrimmedSegments = (
 	return trimmed
 }
 
-export const parseCsvToSegments = (csvContent: string): YouTubeSegment[] => {
+export const mapCsvRowsToSegments = (csvRows: CsvRow[]): YouTubeSegment[] => {
 	const segments: YouTubeSegment[] = []
 
 	// Always start with the intro segment
 	segments.push(INTRO_SEGMENT)
 
-	const lines = csvContent.split('\n')
-	if (lines.length === 0) {
-		return segments
-	}
+	// Process each CSV row
+	for (let i = 0; i < csvRows.length; i++) {
+		const row = csvRows[i]!
 
-	// Parse header to find column positions
-	const indices = parseHeaderIndices(lines[0] || '')
-
-	// Parse data rows with multi-line field support
-	let i = 1
-	let csvRowIndex = 1
-	while (i < lines.length) {
-		const line = lines[i]
-
-		// Skip empty lines
-		if (!line?.trim()) {
-			i++
+		// Skip invalid rows
+		if (!isValidRow(row)) {
 			continue
 		}
 
-		// Handle multi-line quoted fields
-		const mergedLine = mergeMultiLineFields(lines, i)
-
-		// Extract row data
-		const rowData = extractRowData(mergedLine, indices)
-		if (!rowData || !isValidRow(rowData)) {
-			i++
-			csvRowIndex++
-			continue
-		}
-
-		// Create and store segment
-		const segment = createYouTubeSegment(rowData, csvRowIndex)
+		// Create and store segment (csvRowIndex is 1-based, starting after the intro)
+		const segment = createYouTubeSegment(row, i + 1)
 		segments.push(segment)
-
-		// Skip any lines that were merged
-		const linesMerged = (mergedLine.match(/\n/g) || []).length
-		i += linesMerged + 1
-		csvRowIndex++
 	}
 
 	return segments
+}
+
+export const parseCsvToSegments = async (
+	file: File,
+): Promise<YouTubeSegment[]> => {
+	const arrayBuffer = await file.arrayBuffer()
+	const fileText = decodeFile(arrayBuffer)
+
+	const csvRows = Papa.parse<CsvRow>(fileText, {
+		header: true,
+		skipEmptyLines: true,
+		transformHeader: (header) => header.toLowerCase().trim(),
+	})
+
+	return mapCsvRowsToSegments(csvRows.data)
 }

@@ -29,9 +29,7 @@
 
 		try {
 			const [file] = newFiles
-			const arrayBuffer = await file.arrayBuffer()
-			const fileText = decodeFile(arrayBuffer)
-			rawSegments = parseCsvToSegments(fileText)
+			rawSegments = await parseCsvToSegments(file)
 		} catch (error) {
 			toast.error('Failed to parse your file... Check it & try again?')
 		} finally {
