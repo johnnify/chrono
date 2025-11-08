@@ -1,18 +1,13 @@
 import {test, expect} from '@playwright/test'
+import {join} from 'node:path'
 
-import path from 'path'
-import {fileURLToPath} from 'url'
-
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
-
-const testCsv = path.join(
-	__dirname,
+const testCsv = join(
+	import.meta.dirname,
 	'../../src/lib/parseCsvToSegments/test-segments.csv',
 )
 
-const sheetsExportCsv = path.join(
-	__dirname,
+const sheetsExportCsv = join(
+	import.meta.dirname,
 	'../../src/lib/parseCsvToSegments/google-sheets-export.csv',
 )
 

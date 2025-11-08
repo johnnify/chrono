@@ -1,7 +1,6 @@
-import path from 'path'
-import {fileURLToPath} from 'url'
+import {join} from 'node:path'
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
-
-export const authCredentialsFile = path.join(__dirname, 'auth/loggedIn.json')
+export const authCredentialsFile = join(
+	import.meta.dirname,
+	'auth/loggedIn.json',
+)
