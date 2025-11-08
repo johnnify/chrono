@@ -1,69 +1,37 @@
-<script lang="ts">
-	import {cn} from '$lib/utils'
-	import Button from '$lib/components/ui/button/button.svelte'
-	import CsvIcon from '~icons/hugeicons/csv-01'
-
-	import CloseIcon from '~icons/material-symbols/close'
-	import DescriptionIcon from '~icons/material-symbols/description'
-
-	type FileWithPreview = {
+<script lang="ts" module>
+	export type FileWithPreview = {
 		file: File
 		preview: string | null
-		errors: string[]
+		error: string | null
 	}
+</script>
+
+<script lang="ts">
+	import CsvIcon from '~icons/hugeicons/csv-01'
+	import CrossIcon from '~icons/material-symbols/close'
+	import DocumentIcon from '~icons/material-symbols/description'
+
+	import {cn} from '$lib/utils'
+	import Button from '$lib/components/ui/button/button.svelte'
 
 	type Props = {
 		class?: string
-		maxFiles?: number
-		maxFileSize?: number
 		accept?: string
-		onFilesChange?: (files: File[]) => void
+		onFileChange?: (file: FileWithPreview | null) => void
 	}
 
-	let {
-		class: className,
-		maxFiles = 5,
-		maxFileSize = 10 * 1024 * 1024, // 10MB default
-		accept,
-		onFilesChange,
-	}: Props = $props()
+	let {class: className, accept, onFileChange}: Props = $props()
 
-	let files = $state<FileWithPreview[]>([])
+	let file = $state<FileWithPreview | null>(null)
 	let isDragActive = $state(false)
 	let isDragReject = $state(false)
 	let inputRef: HTMLInputElement | null = $state(null)
 
-	const formatBytes = (
-		bytes: number,
-		decimals = 2,
-		size?: 'bytes' | 'KB' | 'MB' | 'GB' | 'TB' | 'PB' | 'EB' | 'ZB' | 'YB',
-	) => {
-		const k = 1000
-		const dm = decimals < 0 ? 0 : decimals
-		const sizes = ['bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
-
-		if (bytes === 0 || bytes === undefined)
-			return size !== undefined ? `0 ${size}` : '0 bytes'
-		const i =
-			size !== undefined
-				? sizes.indexOf(size)
-				: Math.floor(Math.log(bytes) / Math.log(k))
-		return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i]
-	}
-
-	const validateFile = (file: File): string[] => {
-		const errors: string[] = []
-
-		if (file.size > maxFileSize) {
-			errors.push(
-				`File is larger than ${formatBytes(maxFileSize, 2)} (Size: ${formatBytes(file.size, 2)})`,
-			)
-		}
-
+	const validateFile = (selectedFile: File): string | null => {
 		if (accept) {
 			const acceptedTypes = accept.split(',').map((type) => type.trim())
-			const fileType = file.type
-			const fileName = file.name
+			const fileType = selectedFile.type
+			const fileName = selectedFile.name
 			const fileExtension = `.${fileName.split('.').pop()}`
 
 			const isAccepted = acceptedTypes.some((acceptedType) => {
@@ -77,49 +45,51 @@
 			})
 
 			if (!isAccepted) {
-				errors.push('File type not accepted')
+				return 'File type not accepted'
 			}
 		}
 
-		return errors
+		return null
 	}
 
-	const createFileWithPreview = (file: File): FileWithPreview => {
-		const errors = validateFile(file)
+	const createFileWithPreview = (selectedFile: File): FileWithPreview => {
+		const error = validateFile(selectedFile)
 		let preview: string | null = null
 
-		if (file.type.startsWith('image/')) {
-			preview = URL.createObjectURL(file)
+		if (selectedFile.type.startsWith('image/')) {
+			preview = URL.createObjectURL(selectedFile)
 		}
 
-		return {file, preview, errors}
+		return {file: selectedFile, preview, error}
 	}
 
-	const handleFiles = (fileList: FileList | null) => {
-		if (!fileList) return
+	const handleFile = (fileList: FileList | null) => {
+		if (!fileList || fileList.length === 0) return
 
-		const newFiles = Array.from(fileList).map(createFileWithPreview)
-		files = [...files, ...newFiles]
+		// Clean up previous preview if it exists
+		if (file?.preview) {
+			URL.revokeObjectURL(file.preview)
+		}
 
-		if (onFilesChange) {
-			onFilesChange(files.map((f) => f.file))
+		// Only take the first file
+		const selectedFile = fileList[0]
+		if (selectedFile) {
+			file = createFileWithPreview(selectedFile)
+			onFileChange?.(file)
 		}
 	}
 
-	const handleRemoveFile = (index: number) => {
-		const fileToRemove = files[index]
-		if (fileToRemove?.preview) {
-			URL.revokeObjectURL(fileToRemove.preview)
+	const handleRemoveFile = () => {
+		if (file?.preview) {
+			URL.revokeObjectURL(file.preview)
 		}
-		files = files.filter((_, i) => i !== index)
+		file = null
 
-		if (!files.length && inputRef) {
+		if (inputRef) {
 			inputRef.value = ''
 		}
 
-		if (onFilesChange) {
-			onFilesChange(files.map((f) => f.file))
-		}
+		onFileChange?.(null)
 	}
 
 	const handleDragEnter = (e: DragEvent) => {
@@ -163,30 +133,26 @@
 		isDragReject = false
 
 		const droppedFiles = e.dataTransfer?.files ?? null
-		handleFiles(droppedFiles)
+		handleFile(droppedFiles)
 	}
 
 	const handleInputChange = (e: Event) => {
 		const input = e.target as HTMLInputElement
-		handleFiles(input.files)
+		handleFile(input.files)
 	}
 
 	const handleClick = () => {
 		inputRef?.click()
 	}
 
-	const exceedMaxFiles = $derived(files.length > maxFiles)
-	const hasErrors = $derived(
-		files.some((f) => f.errors.length > 0) || exceedMaxFiles,
-	)
-	const isInvalid = $derived((isDragActive && isDragReject) || hasErrors)
+	const isInvalid = $derived((isDragActive && isDragReject) || !!file?.error)
 </script>
 
 <div
 	class={cn(
-		'bg-card text-card-foreground border-border rounded-lg border p-6 text-center',
+		'bg-card text-card-foreground border-border min-h-40 place-content-center rounded-lg border p-6',
 		className,
-		files.length > 0 ? 'border-solid' : 'border-2 border-dashed',
+		file ? 'border-solid' : 'border-2 border-dashed',
 		isDragActive && 'border-primary bg-primary/10',
 		isInvalid && 'border-destructive bg-destructive/10',
 	)}
@@ -195,99 +161,78 @@
 	ondragleave={handleDragLeave}
 	ondrop={handleDrop}
 	role="region"
-	aria-label="File upload drop zone"
 >
 	<input
 		bind:this={inputRef}
 		type="file"
-		multiple={maxFiles !== 1}
 		{accept}
 		onchange={handleInputChange}
 		class="hidden"
 		aria-label="CSV file input"
 	/>
 
-	{#if files.length === 0}
+	{#if !file}
 		<!-- Empty State -->
 		<div class="flex flex-col items-center gap-y-2 py-1">
 			<CsvIcon class="text-muted-foreground size-5" />
-			<p class="text-sm">
-				Drop CSV {!!maxFiles && maxFiles > 1 ? ` ${maxFiles}` : ''} file{!maxFiles ||
-				maxFiles > 1
-					? 's'
-					: ''}
+			<p class="text-sm">Drop CSV file</p>
+			<p class="text-muted-foreground text-xs">
+				Drag and drop or <Button
+					onclick={handleClick}
+					variant="link"
+					size="inline"
+					type="button">select file</Button
+				> to process
 			</p>
-			<div class="flex flex-col items-center gap-y-1">
-				<p class="text-muted-foreground text-xs">
-					Drag and drop or <Button
-						onclick={handleClick}
-						variant="link"
-						size="inline"
-						type="button">select {maxFiles === 1 ? 'file' : 'files'}</Button
-					> to process
-				</p>
-				{#if maxFileSize !== Number.POSITIVE_INFINITY}
-					<p class="text-muted-foreground text-xs">
-						Maximum file size: {formatBytes(maxFileSize, 0)}
-					</p>
-				{/if}
-			</div>
 		</div>
 	{:else}
-		<!-- File List -->
+		<!-- File Display -->
 		<div class="flex flex-col">
-			{#each files as fileWithPreview, idx (fileWithPreview.file.name + idx)}
-				{@const {file, preview, errors: fileErrors} = fileWithPreview}
-				<div
-					class="border-border flex items-center gap-x-4 border-b py-2 first:mt-4 last:mb-4"
-				>
-					{#if file.type.startsWith('image/') && preview}
-						<div
-							class="bg-muted flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded border"
-						>
-							<img src={preview} alt={file.name} class="object-cover" />
-						</div>
-					{:else}
-						<div
-							class="bg-muted border-border flex h-10 w-10 items-center justify-center rounded border"
-						>
-							<DescriptionIcon />
-						</div>
-					{/if}
-
-					<div class="flex shrink grow flex-col items-start truncate">
-						<p title={file.name} class="max-w-full truncate text-sm">
-							{file.name}
-						</p>
-						{#if fileErrors.length > 0}
-							<p class="text-destructive text-xs">
-								{fileErrors.join(', ')}
-							</p>
-						{:else}
-							<p class="text-muted-foreground text-xs">
-								{formatBytes(file.size, 2)}
-							</p>
-						{/if}
-					</div>
-
-					<Button
-						size="icon"
-						variant="link"
-						class="text-muted-foreground hover:text-foreground shrink-0 justify-self-end"
-						onclick={() => handleRemoveFile(idx)}
-						type="button"
-						aria-label="Remove file {file.name}"
+			<div
+				class="border-border flex items-center gap-x-4 border-b py-2 first:mt-4 last:mb-4"
+			>
+				{#if file.file.type.startsWith('image/') && file.preview}
+					<div
+						class="bg-muted flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded border"
 					>
-						<CloseIcon />
-					</Button>
+						<img src={file.preview} alt={file.file.name} class="object-cover" />
+					</div>
+				{:else if file.file.type.includes('csv')}
+					<div
+						class="bg-muted border-border flex h-10 w-10 items-center justify-center rounded border"
+					>
+						<CsvIcon />
+					</div>
+				{:else}
+					<div
+						class="bg-muted border-border flex h-10 w-10 items-center justify-center rounded border"
+					>
+						<DocumentIcon />
+					</div>
+				{/if}
+
+				<div class="flex shrink grow flex-col items-start truncate">
+					<p title={file.file.name} class="max-w-full truncate text-sm">
+						{file.file.name}
+					</p>
+					{#if file.error}
+						<p class="text-destructive text-xs">
+							{file.error}
+						</p>
+					{/if}
 				</div>
-			{/each}
-			{#if exceedMaxFiles}
-				<p class="text-destructive mt-2 text-left text-sm">
-					You may attach only up to {maxFiles} files, please remove {files.length -
-						maxFiles} file{files.length - maxFiles > 1 ? 's' : ''}.
-				</p>
-			{/if}
+
+				<Button
+					size="icon"
+					variant="link"
+					class="text-muted-foreground hover:text-foreground shrink-0 justify-self-end"
+					onclick={handleRemoveFile}
+					type="button"
+					aria-label="Remove file {file.file.name}"
+				>
+					<CrossIcon />
+				</Button>
+			</div>
 		</div>
 	{/if}
 </div>
