@@ -1,28 +1,36 @@
 import {describe, expect, it} from 'vitest'
 import {readFileSync} from 'node:fs'
 import {join} from 'node:path'
-import {parseCsvToSegments, cutTrimmedSegments} from './parseCsvToSegments'
+import {
+	mapCsvRowsToSegments,
+	cutTrimmedSegments,
+	parseCsvToSegments,
+} from './parseCsvToSegments'
+import type {CsvRow} from './parseCsvToSegments'
 
-describe('parseCsvToSegments', () => {
+describe('mapCsvRowsToSegments', () => {
 	it('returns an array of YouTubeSegment', () => {
-		const csvPath = join(__dirname, 'test-segments.csv')
-		const csvContent = readFileSync(csvPath, 'utf16le')
+		const csvRows: CsvRow[] = [
+			{'marker name': 'intro', description: 'Welcome', in: '00:00:00:00'},
+		]
 
-		const result = parseCsvToSegments(csvContent)
+		const result = mapCsvRowsToSegments(csvRows)
 
-		expect(Array.isArray(result)).toBe(true)
 		expect(result.length).toBeGreaterThan(0)
+		expect(result[0]).toHaveProperty('timestamp')
+		expect(result[0]).toHaveProperty('description')
+		expect(result[0]).toHaveProperty('trimmed')
+		expect(result[0]).toHaveProperty('csvRowIndex')
 	})
 
 	it('always includes 00:00:00 - Intro as first segment', () => {
-		const csvPath = join(__dirname, 'test-segments.csv')
-		const csvContent = readFileSync(csvPath, 'utf16le')
+		const csvRows: CsvRow[] = [
+			{'marker name': 'intro', description: 'Welcome', in: '00:00:00:00'},
+		]
 
-		const segments = parseCsvToSegments(csvContent)
+		const segments = mapCsvRowsToSegments(csvRows)
 
-		// Get first entry
 		const firstSegment = segments[0]
-
 		expect(firstSegment).toBeDefined()
 		expect(firstSegment?.timestamp).toBe('00:00:00')
 		expect(firstSegment?.description).toBe('Intro')
@@ -31,15 +39,18 @@ describe('parseCsvToSegments', () => {
 	})
 
 	it('parses CSV rows and converts timestamps to YouTube format', () => {
-		const csvPath = join(__dirname, 'test-segments.csv')
-		const csvContent = readFileSync(csvPath, 'utf16le')
+		const csvRows: CsvRow[] = [
+			{
+				'marker name': 'intro',
+				description: 'astra award victory lap',
+				in: '00:14:40:37',
+			},
+		]
 
-		const segments = parseCsvToSegments(csvContent)
+		const segments = mapCsvRowsToSegments(csvRows)
 
-		// Should have more than just the intro
 		expect(segments.length).toBeGreaterThan(1)
 
-		// Check for a specific segment from the CSV
 		const introSegment = segments.find((s) =>
 			s.description.includes('astra award victory lap'),
 		)
@@ -49,12 +60,16 @@ describe('parseCsvToSegments', () => {
 	})
 
 	it('marks segments with "ad break" as trimmed', () => {
-		const csvPath = join(__dirname, 'test-segments.csv')
-		const csvContent = readFileSync(csvPath, 'utf16le')
+		const csvRows: CsvRow[] = [
+			{
+				'marker name': 'ad break',
+				description: 'lola blanket',
+				in: '00:47:17:39',
+			},
+		]
 
-		const segments = parseCsvToSegments(csvContent)
+		const segments = mapCsvRowsToSegments(csvRows)
 
-		// Find the "ad break" segment (search in description)
 		const adBreakSegment = segments.find((s) => {
 			const lower = s.description.toLowerCase()
 			return lower.includes('ad break') || lower.startsWith('ad break')
@@ -66,12 +81,12 @@ describe('parseCsvToSegments', () => {
 	})
 
 	it('marks segments with "ad" in name as trimmed', () => {
-		const csvPath = join(__dirname, 'test-segments.csv')
-		const csvContent = readFileSync(csvPath, 'utf16le')
+		const csvRows: CsvRow[] = [
+			{'marker name': 'uncommon goods ad', description: '', in: '01:32:51:29'},
+		]
 
-		const segments = parseCsvToSegments(csvContent)
+		const segments = mapCsvRowsToSegments(csvRows)
 
-		// Find the "uncommon goods ad" segment
 		const uncommonGoodsAd = segments.find((s) =>
 			s.description.includes('uncommon goods ad'),
 		)
@@ -81,17 +96,22 @@ describe('parseCsvToSegments', () => {
 	})
 
 	it('does not mark segments with "ad" as part of other words as trimmed', () => {
-		// Test that words like "addressing", "roadmap", "iad" don't trigger trimming
-		const testCsv = [
-			'Marker Name\tDescription\tIn\tOut\tDuration',
-			'addressing concerns\t\t00:01:00:00\t00:01:00:00\t00:00:00:00',
-			'roadmap discussion\t\t00:02:00:00\t00:02:00:00\t00:00:00:00',
-			'nomad lifestyle\t\t00:03:00:00\t00:03:00:00\t00:00:00:00',
-		].join('\n')
+		const csvRows: CsvRow[] = [
+			{
+				'marker name': 'addressing concerns',
+				description: '',
+				in: '00:01:00:00',
+			},
+			{
+				'marker name': 'roadmap discussion',
+				description: '',
+				in: '00:02:00:00',
+			},
+			{'marker name': 'nomad lifestyle', description: '', in: '00:03:00:00'},
+		]
 
-		const segments = parseCsvToSegments(testCsv)
+		const segments = mapCsvRowsToSegments(csvRows)
 
-		// None of these should be trimmed
 		const addressingSegment = segments.find((s) =>
 			s.description.includes('addressing'),
 		)
@@ -106,15 +126,17 @@ describe('parseCsvToSegments', () => {
 	})
 
 	it('does not mark segments with "ad end" as trimmed', () => {
-		// "ad end" markers should NOT be considered as ads to be trimmed
-		const testCsv = [
-			'Marker Name\tDescription\tIn\tOut\tDuration',
-			'ad break\t\t00:01:00:00\t00:02:00:00\t00:01:00:00',
-			'ad end\t\t00:02:00:00\t00:02:30:00\t00:00:30:00',
-			'content continues\t\t00:02:30:00\t00:03:00:00\t00:00:30:00',
-		].join('\n')
+		const csvRows: CsvRow[] = [
+			{'marker name': 'ad break', description: '', in: '00:01:00:00'},
+			{'marker name': 'ad end', description: '', in: '00:02:00:00'},
+			{
+				'marker name': 'content continues',
+				description: '',
+				in: '00:02:30:00',
+			},
+		]
 
-		const segments = parseCsvToSegments(testCsv)
+		const segments = mapCsvRowsToSegments(csvRows)
 
 		const adBreakSegment = segments.find((s) =>
 			s.description.toLowerCase().includes('ad break'),
@@ -123,30 +145,23 @@ describe('parseCsvToSegments', () => {
 			s.description.toLowerCase().includes('ad end'),
 		)
 
-		// "ad break" should be trimmed
 		expect(adBreakSegment?.trimmed).toBe(true)
-
-		// "ad end" should NOT be trimmed
 		expect(adEndSegment?.trimmed).toBe(false)
 	})
 
 	it('includes csvRowIndex for each segment', () => {
-		const testCsv = [
-			'Marker Name\tDescription\tIn\tOut\tDuration',
-			'intro\tWelcome\t00:00:00:00\t00:01:00:00\t00:01:00:00',
-			'content\tMain topic\t00:02:00:00\t00:03:00:00\t00:01:00:00',
-		].join('\n')
+		const csvRows: CsvRow[] = [
+			{'marker name': 'intro', description: 'Welcome', in: '00:00:00:00'},
+			{'marker name': 'content', description: 'Main topic', in: '00:02:00:00'},
+		]
 
-		const segments = parseCsvToSegments(testCsv)
+		const segments = mapCsvRowsToSegments(csvRows)
 
-		// Intro segment has csvRowIndex 0
 		expect(segments[0]?.csvRowIndex).toBe(0)
 
-		// First parsed segment should have csvRowIndex 1
 		const firstParsed = segments.find((s) => s.description.includes('Welcome'))
 		expect(firstParsed?.csvRowIndex).toBe(1)
 
-		// Second parsed segment should have csvRowIndex 2
 		const secondParsed = segments.find((s) => s.description.includes('Main'))
 		expect(secondParsed?.csvRowIndex).toBe(2)
 	})
@@ -154,23 +169,22 @@ describe('parseCsvToSegments', () => {
 
 describe('cutTrimmedSegments', () => {
 	it('excludes segments marked as trimmed', () => {
-		const testCsv = [
-			'Marker Name\tDescription\tIn\tOut\tDuration',
-			'intro\tWelcome\t00:00:00:00\t00:01:00:00\t00:01:00:00',
-			'ad break\tSponsor message\t00:01:00:00\t00:02:00:00\t00:01:00:00',
-			'content\tMain topic\t00:02:00:00\t00:03:00:00\t00:01:00:00',
-		].join('\n')
+		const csvRows: CsvRow[] = [
+			{'marker name': 'intro', description: 'Welcome', in: '00:00:00:00'},
+			{
+				'marker name': 'ad break',
+				description: 'Sponsor message',
+				in: '00:01:00:00',
+			},
+			{'marker name': 'content', description: 'Main topic', in: '00:02:00:00'},
+		]
 
-		const raw = parseCsvToSegments(testCsv)
+		const raw = mapCsvRowsToSegments(csvRows)
 		const trimmed = cutTrimmedSegments(raw)
 
-		// Raw should have 4 segments (intro row + 3 parsed)
 		expect(raw.length).toBe(4)
-
-		// Trimmed should have 3 segments (intro row + intro + content, minus ad break)
 		expect(trimmed.length).toBe(3)
 
-		// Verify ad break is not in trimmed
 		const hasAdBreak = trimmed.some((s) =>
 			s.description.toLowerCase().includes('ad break'),
 		)
@@ -178,23 +192,16 @@ describe('cutTrimmedSegments', () => {
 	})
 
 	it('adjusts timestamps when segments are removed', () => {
-		// Create a CSV with an ad segment in the middle
-		// Segment 1: 00:00:00 - Welcome
-		// Segment 2: 00:02:00 - Ad (should be removed, duration = 1 minute)
-		// Segment 3: 00:03:00 - Content (should become 00:02:00 in trimmed)
-		// Segment 4: 00:05:00 - Outro (should become 00:04:00 in trimmed)
-		const testCsv = [
-			'Marker Name\tDescription\tIn\tOut\tDuration',
-			'welcome\t\t00:00:00:00\t00:02:00:00\t00:02:00:00',
-			'ad\tSponsor\t00:02:00:00\t00:03:00:00\t00:01:00:00',
-			'main content\t\t00:03:00:00\t00:05:00:00\t00:02:00:00',
-			'outro\t\t00:05:00:00\t00:06:00:00\t00:01:00:00',
-		].join('\n')
+		const csvRows: CsvRow[] = [
+			{'marker name': 'welcome', description: '', in: '00:00:00:00'},
+			{'marker name': 'ad', description: 'Sponsor', in: '00:02:00:00'},
+			{'marker name': 'main content', description: '', in: '00:03:00:00'},
+			{'marker name': 'outro', description: '', in: '00:05:00:00'},
+		]
 
-		const raw = parseCsvToSegments(testCsv)
+		const raw = mapCsvRowsToSegments(csvRows)
 		const trimmed = cutTrimmedSegments(raw)
 
-		// Find the segments in trimmed
 		const welcomeSegment = trimmed.find((s) =>
 			s.description.includes('welcome'),
 		)
@@ -203,33 +210,25 @@ describe('cutTrimmedSegments', () => {
 		)
 		const outroSegment = trimmed.find((s) => s.description.includes('outro'))
 
-		// Welcome should stay at 00:00:00
 		expect(welcomeSegment?.timestamp).toBe('00:00:00')
-
-		// Content should be adjusted from 00:03:00 to 00:02:00 (minus 1 minute ad)
 		expect(contentSegment?.timestamp).toBe('00:02:00')
-
-		// Outro should be adjusted from 00:05:00 to 00:04:00 (minus 1 minute ad)
 		expect(outroSegment?.timestamp).toBe('00:04:00')
 	})
 
 	it('adjusts timestamps with multiple removed segments', () => {
-		// Create a CSV with multiple ad segments
-		// Segment 1: 00:00:00 - Intro
-		// Segment 2: 00:01:00 - Ad 1 (duration = 30 seconds)
-		// Segment 3: 00:01:30 - Content
-		// Segment 4: 00:03:00 - Ad 2 (duration = 1 minute)
-		// Segment 5: 00:04:00 - Outro
-		const testCsv = [
-			'Marker Name\tDescription\tIn\tOut\tDuration',
-			'intro\t\t00:00:00:00\t00:01:00:00\t00:01:00:00',
-			'ad\tFirst sponsor\t00:01:00:00\t00:01:30:00\t00:00:30:00',
-			'content\t\t00:01:30:00\t00:03:00:00\t00:01:30:00',
-			'ad break\tSecond sponsor\t00:03:00:00\t00:04:00:00\t00:01:00:00',
-			'outro\t\t00:04:00:00\t00:05:00:00\t00:01:00:00',
-		].join('\n')
+		const csvRows: CsvRow[] = [
+			{'marker name': 'intro', description: '', in: '00:00:00:00'},
+			{'marker name': 'ad', description: 'First sponsor', in: '00:01:00:00'},
+			{'marker name': 'content', description: '', in: '00:01:30:00'},
+			{
+				'marker name': 'ad break',
+				description: 'Second sponsor',
+				in: '00:03:00:00',
+			},
+			{'marker name': 'outro', description: '', in: '00:04:00:00'},
+		]
 
-		const raw = parseCsvToSegments(testCsv)
+		const raw = mapCsvRowsToSegments(csvRows)
 		const trimmed = cutTrimmedSegments(raw)
 
 		const introSegment = trimmed.find((s) => s.description.includes('intro'))
@@ -238,29 +237,125 @@ describe('cutTrimmedSegments', () => {
 		)
 		const outroSegment = trimmed.find((s) => s.description.includes('outro'))
 
-		// Intro should stay at 00:00:00
 		expect(introSegment?.timestamp).toBe('00:00:00')
-
-		// Content should be adjusted from 00:01:30 to 00:01:00 (minus 30 seconds from ad 1)
 		expect(contentSegment?.timestamp).toBe('00:01:00')
-
-		// Outro should be adjusted from 00:04:00 to 00:02:30 (minus 30s from ad 1 + 1 minute from ad 2)
 		expect(outroSegment?.timestamp).toBe('00:02:30')
 	})
 
 	it('includes the intro segment', () => {
-		const csvPath = join(__dirname, 'test-segments.csv')
-		const csvContent = readFileSync(csvPath, 'utf16le')
+		const csvRows: CsvRow[] = [
+			{'marker name': 'intro', description: 'Welcome', in: '00:00:00:00'},
+		]
 
-		const raw = parseCsvToSegments(csvContent)
+		const raw = mapCsvRowsToSegments(csvRows)
 		const trimmed = cutTrimmedSegments(raw)
 
-		// Get first entry
 		const firstSegment = trimmed[0]
 
 		expect(firstSegment).toBeDefined()
 		expect(firstSegment?.timestamp).toBe('00:00:00')
 		expect(firstSegment?.description).toBe('Intro')
 		expect(firstSegment?.trimmed).toBe(false)
+	})
+})
+
+describe('parseCsvToSegments', () => {
+	const csvPath = join(import.meta.dirname, 'test-segments.csv')
+	const nodeBuffer = readFileSync(csvPath)
+	const arrayBuffer = nodeBuffer.buffer.slice(
+		nodeBuffer.byteOffset,
+		nodeBuffer.byteOffset + nodeBuffer.byteLength,
+	)
+	const minnMaxTestFile = new File([arrayBuffer], 'test-segments.csv', {
+		type: 'text/csv',
+	})
+
+	it('parses a real CSV file and returns YouTube segments', async () => {
+		const segments = await parseCsvToSegments(minnMaxTestFile)
+
+		expect(segments.length).toBeGreaterThan(0)
+		expect(segments[0]?.timestamp).toBe('00:00:00')
+		expect(segments[0]?.description).toBe('Intro')
+	})
+
+	it('handles UTF-16LE encoded CSV files', async () => {
+		const segments = await parseCsvToSegments(minnMaxTestFile)
+
+		// Should successfully parse the UTF-16LE file
+		expect(segments.length).toBeGreaterThan(1)
+
+		// Check for a known segment from the test file
+		const astraSegment = segments.find((s) =>
+			s.description.includes('astra award victory lap'),
+		)
+		expect(astraSegment).toBeDefined()
+		expect(astraSegment?.timestamp).toBe('00:14:40')
+	})
+
+	it('correctly identifies and marks ad segments', async () => {
+		const segments = await parseCsvToSegments(minnMaxTestFile)
+
+		// Find ad break segment
+		const adBreakSegment = segments.find((s) =>
+			s.description.toLowerCase().includes('ad break'),
+		)
+		expect(adBreakSegment).toBeDefined()
+		expect(adBreakSegment?.trimmed).toBe(true)
+
+		// Find uncommon goods ad
+		const uncommonGoodsAd = segments.find((s) =>
+			s.description.includes('uncommon goods ad'),
+		)
+		expect(uncommonGoodsAd).toBeDefined()
+		expect(uncommonGoodsAd?.trimmed).toBe(true)
+	})
+
+	it('does not mark "ad end" as an ad to be trimmed', async () => {
+		const segments = await parseCsvToSegments(minnMaxTestFile)
+
+		// The test file has "(LoL) ad end" which should NOT be trimmed
+		const adEndSegment = segments.find((s) =>
+			s.description.toLowerCase().includes('ad end'),
+		)
+		expect(adEndSegment).toBeDefined()
+		expect(adEndSegment?.trimmed).toBe(false)
+	})
+
+	it('converts editing software timestamps to YouTube format', async () => {
+		const segments = await parseCsvToSegments(minnMaxTestFile)
+
+		// All timestamps should be in HH:MM:SS format (not HH:MM:SS:FF)
+		for (const segment of segments) {
+			expect(segment.timestamp).toMatch(/^\d{2}:\d{2}:\d{2}$/)
+		}
+	})
+
+	it('handles a CSV exported from Google Sheets', async () => {
+		const googleSheetsPath = join(
+			import.meta.dirname,
+			'google-sheets-export.csv',
+		)
+		const nodeBuffer = readFileSync(googleSheetsPath)
+		const arrayBuffer = nodeBuffer.buffer.slice(
+			nodeBuffer.byteOffset,
+			nodeBuffer.byteOffset + nodeBuffer.byteLength,
+		)
+		const googleSheetsFile = new File(
+			[arrayBuffer],
+			'google-sheets-export.csv',
+			{
+				type: 'text/csv',
+			},
+		)
+
+		const segments = await parseCsvToSegments(googleSheetsFile)
+
+		// Should have 8 segments total (1 auto intro + 7 from CSV)
+		expect(segments.length).toBe(8)
+
+		// Should have 1 ad segment
+		const adSegments = segments.filter((s) => s.trimmed)
+		expect(adSegments.length).toBe(1)
+		expect(adSegments[0]?.description).toContain('Johnnify Premium ad')
 	})
 })
