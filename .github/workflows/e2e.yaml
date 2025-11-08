@@ -13,11 +13,7 @@ jobs:
         working-directory: ./apps/web
     steps:
       - uses: actions/checkout@v5
-      - uses: actions/setup-node@v6
-        with:
-          node-version-file: '.node-version'
-      - name: Enable corepack
-        run: corepack enable
+      - uses: jdx/mise-action@v3
       - name: Install dependencies
         run: pnpm install
       - name: Install Playwright Browsers

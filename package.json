@@ -9,7 +9,7 @@
 		"lint": "turbo lint",
 		"test": "turbo test",
 		"check": "turbo check",
-		"tdd": "turbo tdd"
+		"sanity": "turbo test check lint"
 	},
 	"devDependencies": {
 		"@prettier/plugin-oxc": "^0.0.4",

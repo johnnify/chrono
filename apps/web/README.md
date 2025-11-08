@@ -9,7 +9,6 @@ Web app for Chrono, implemented with SvelteKit!
 - Auth: [Lucia](https://lucia-auth.com/)-style auth heavily using [Arctic](https://arcticjs.dev/)
 - Schema validation: [Zod 4](https://zod.dev/)
 - Browser tests: [Playwright](https://playwright.dev/)
-- HTTP request interception & mocking: [MSW](https://mswjs.io/)
 - [TypeScript](https://www.typescriptlang.org/) for static type checking
 - [pnpm](https://pnpm.io/) as the package manager
 - [Prettier](https://prettier.io) for code formatting
@@ -83,20 +82,6 @@ Anytime, run:
 ```sh
 pnpm run test:unit
 ```
-
-## Mock Service Worker
-
-We use [MSW](https://mswjs.io/) to mock API requests during tests and local development: So long as there's an `MSW_ENABLED` environment variable set exactly to the string `true`.
-
-Some requests [get passed-through](https://mswjs.io/docs/api/passthrough/) regardless.
-
-You may tweak the handlers or define more in the `src/mocks` directory.
-
-Unlike everything else in this app, **MSW handlers are not automatically reloaded**. When you make changes in the handlers, you must manually restart the dev server.
-
-With `MSW_ENABLED='true'`, you'll see a yellow warning for any non-intercepted request. We should at the very least have a pass-through handler for all requests.
-
-With `MSW_ENABLED='true'`, you can interact with our backend API, without having the actual backend running! This is useful for integration and unit tests, but also during development and demos for edge and error cases.
 
 ## Other handy scripts
 
