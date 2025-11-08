@@ -71,7 +71,6 @@ The user will handle all migration operations manually.
 - `src/lib/components/` - Reusable Svelte components
 - `src/lib/server/` - Server-side utilities (auth, db)
 - `src/routes/` - SvelteKit file-based routing
-- `src/mocks/` - MSW handlers for testing
 - `tests/` - Playwright test suites
 
 ### Database Schema
@@ -91,7 +90,6 @@ Shared across apps via `@repo/db` package, located in `packages/db/src/schema/`:
 
 - **Playwright**: e2e and integration tests, run with dev servers
 - **Vitest**: Unit tests, can run independently
-- **MSW**: HTTP mocking during tests and development (when `MSW_ENABLED=true`)
 
 You MUST start Playwright specs / tests by navigating to a page, then:
 
@@ -130,13 +128,11 @@ EVERY test should have a realistic to see fail.
 
 - Copy `.env.test` to create `.env` and `.env.local`
 - Required for development due to auth secrets and database configuration
-- MSW can be enabled with `MSW_ENABLED=true` for API mocking
 
 ### Important Notes
 
 - Use pnpm as package manager
 - Node.js 25.1.0 required (managed by Mise)
-- MSW handlers require manual dev server restart when modified
 - All tests require dev servers running except unit tests
 
 ### Tailwind CSS v4 Configuration

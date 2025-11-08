@@ -22,7 +22,6 @@ export default defineConfig({
 	test: {
 		include: ['src/**/*.test.ts'],
 		mockReset: true,
-		setupFiles: ['./src/vitest.setup.ts'],
 	},
 	preview: {
 		port: 5173,
