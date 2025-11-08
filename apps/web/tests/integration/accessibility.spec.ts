@@ -1,7 +1,13 @@
 import {test, expect} from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
+import {join} from 'node:path'
 
 import {authCredentialsFile} from '../constants'
+
+const testCsv = join(
+	import.meta.dirname,
+	'../../src/lib/parseCsvToSegments/test-segments.csv',
+)
 
 test.use({storageState: authCredentialsFile})
 
@@ -27,8 +33,19 @@ test.describe('accessibility', () => {
 			await page.goto('/timestamps')
 			await expect(page.getByTestId('hydrated')).toBeVisible()
 
-			const accessibilityScanResults = await new AxeBuilder({page}).analyze()
-			expect(accessibilityScanResults.violations).toEqual([])
+			const emptyStateAccessibilityScanResults = await new AxeBuilder({
+				page,
+			}).analyze()
+			expect(emptyStateAccessibilityScanResults.violations).toEqual([])
+
+			await page.locator('input[type="file"]').setInputFiles(testCsv)
+			await expect(
+				page.getByRole('region', {name: 'All Segments'}),
+			).toBeVisible()
+			const fileDroppedAccessibilityScanResults = await new AxeBuilder({
+				page,
+			}).analyze()
+			expect(fileDroppedAccessibilityScanResults.violations).toEqual([])
 		})
 
 		test('`/profile` has no accessibility violations', async ({page}) => {
