@@ -79,15 +79,15 @@ test('handles Google Sheets export CSV', async ({page}) => {
 
 	await page.locator('input[type="file"]').setInputFiles(sheetsExportCsv)
 
-	// Verify "All Segments" region has all 12 segments
+	// Verify "All Segments" region has all 7 segments
 	const allSegmentsRegion = page.getByRole('region', {name: 'All Segments'})
 	await expect(allSegmentsRegion).toBeVisible()
 	const allSegmentsItems = allSegmentsRegion.getByRole('listitem')
-	await expect(allSegmentsItems).toHaveCount(8)
+	await expect(allSegmentsItems).toHaveCount(7)
 
-	// Verify "Post-trim Segments" region has 10/12 segments
+	// Verify "Post-trim Segments" region has 6/7 segments
 	const postTrimRegion = page.getByRole('region', {name: 'Post-trim Segments'})
 	await expect(postTrimRegion).toBeVisible()
 	const postTrimSegmentsItems = postTrimRegion.getByRole('listitem')
-	await expect(postTrimSegmentsItems).toHaveCount(7)
+	await expect(postTrimSegmentsItems).toHaveCount(6)
 })

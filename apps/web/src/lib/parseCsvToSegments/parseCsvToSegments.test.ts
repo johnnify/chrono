@@ -23,9 +23,9 @@ describe('mapCsvRowsToSegments', () => {
 		expect(result[0]).toHaveProperty('csvRowIndex')
 	})
 
-	it('always includes 00:00:00 - Intro as first segment', () => {
+	it('auto-adds an intro as the first segment at 00:00:00', () => {
 		const csvRows: CsvRow[] = [
-			{'marker name': 'intro', description: 'Welcome', in: '00:00:00:00'},
+			{'marker name': 'First topic', description: '', in: '00:10:00:00'},
 		]
 
 		const segments = mapCsvRowsToSegments(csvRows)
@@ -151,13 +151,15 @@ describe('mapCsvRowsToSegments', () => {
 
 	it('includes csvRowIndex for each segment', () => {
 		const csvRows: CsvRow[] = [
-			{'marker name': 'intro', description: 'Welcome', in: '00:00:00:00'},
+			{'marker name': 'intro', description: 'Welcome', in: '00:00:10:00'},
 			{'marker name': 'content', description: 'Main topic', in: '00:02:00:00'},
 		]
 
 		const segments = mapCsvRowsToSegments(csvRows)
 
+		// Auto intro at 00:00:00
 		expect(segments[0]?.csvRowIndex).toBe(0)
+		expect(segments[0]?.description).toBe('Intro')
 
 		const firstParsed = segments.find((s) => s.description.includes('Welcome'))
 		expect(firstParsed?.csvRowIndex).toBe(1)
@@ -165,12 +167,48 @@ describe('mapCsvRowsToSegments', () => {
 		const secondParsed = segments.find((s) => s.description.includes('Main'))
 		expect(secondParsed?.csvRowIndex).toBe(2)
 	})
+
+	it('does not add auto INTRO segment if CSV already has one at 00:00:00', () => {
+		const csvRows: CsvRow[] = [
+			{
+				'marker name': 'Intro',
+				description: 'hello & welcome',
+				in: '00:00:00:13',
+			},
+			{'marker name': 'Main content', description: '', in: '00:10:00:00'},
+		]
+
+		const segments = mapCsvRowsToSegments(csvRows)
+
+		expect(segments.length).toBe(csvRows.length)
+
+		// First segment should be the one from CSV
+		expect(segments[0]?.description).toBe('Intro - hello & welcome')
+		expect(segments[0]?.timestamp).toBe('00:00:00')
+		expect(segments[0]?.csvRowIndex).toBe(1)
+	})
+
+	it('adds auto INTRO segment if CSV starts later than 00:00:00', () => {
+		const csvRows: CsvRow[] = [
+			{'marker name': 'First segment', description: '', in: '00:10:00:00'},
+			{'marker name': 'Second segment', description: '', in: '00:20:00:00'},
+		]
+
+		const segments = mapCsvRowsToSegments(csvRows)
+
+		expect(segments.length).toBe(csvRows.length + 1)
+
+		// First segment should be auto intro
+		expect(segments[0]?.description).toBe('Intro')
+		expect(segments[0]?.timestamp).toBe('00:00:00')
+		expect(segments[0]?.csvRowIndex).toBe(0)
+	})
 })
 
 describe('cutTrimmedSegments', () => {
 	it('excludes segments marked as trimmed', () => {
 		const csvRows: CsvRow[] = [
-			{'marker name': 'intro', description: 'Welcome', in: '00:00:00:00'},
+			{'marker name': 'intro', description: 'Welcome', in: '00:00:10:00'},
 			{
 				'marker name': 'ad break',
 				description: 'Sponsor message',
@@ -244,7 +282,7 @@ describe('cutTrimmedSegments', () => {
 
 	it('includes the intro segment', () => {
 		const csvRows: CsvRow[] = [
-			{'marker name': 'intro', description: 'Welcome', in: '00:00:00:00'},
+			{'marker name': 'content', description: 'Welcome', in: '00:00:10:00'},
 		]
 
 		const raw = mapCsvRowsToSegments(csvRows)
@@ -350,8 +388,12 @@ describe('parseCsvToSegments', () => {
 
 		const segments = await parseCsvToSegments(googleSheetsFile)
 
-		// Should have 8 segments total (1 auto intro + 7 from CSV)
-		expect(segments.length).toBe(8)
+		// Should have 7 segments total (no auto intro since CSV starts at 00:00:00)
+		expect(segments.length).toBe(7)
+
+		// First segment should be from CSV (Intro at 00:00:00)
+		expect(segments[0]?.description).toContain('Intro')
+		expect(segments[0]?.timestamp).toBe('00:00:00')
 
 		// Should have 1 ad segment
 		const adSegments = segments.filter((s) => s.trimmed)

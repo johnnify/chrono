@@ -130,23 +130,18 @@ export const cutTrimmedSegments = (
 }
 
 export const mapCsvRowsToSegments = (csvRows: CsvRow[]): YouTubeSegment[] => {
-	const segments: YouTubeSegment[] = []
-
-	// Always start with the intro segment
-	segments.push(INTRO_SEGMENT)
-
-	// Process each CSV row
-	for (let i = 0; i < csvRows.length; i++) {
-		const row = csvRows[i]!
-
-		// Skip invalid rows
-		if (!isValidRow(row)) {
-			continue
+	const segments = csvRows.reduce<YouTubeSegment[]>((acc, row, i) => {
+		if (isValidRow(row)) {
+			acc.push(createYouTubeSegment(row, i + 1))
 		}
+		return acc
+	}, [])
 
-		// Create and store segment (csvRowIndex is 1-based, starting after the intro)
-		const segment = createYouTubeSegment(row, i + 1)
-		segments.push(segment)
+	const [firstSegment] = segments
+
+	// Auto add an INTRO segment, if CSV doesn't already start at 00:00:00
+	if (firstSegment?.timestamp !== '00:00:00') {
+		segments.unshift(INTRO_SEGMENT)
 	}
 
 	return segments
