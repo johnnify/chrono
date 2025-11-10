@@ -144,14 +144,7 @@ EVERY test should have a realistic to see fail.
 - **Use `cn` utility**: Import from `$lib/utils` for conditional class application with proper merging
 - **Prefer Tailwind classes**: Always use Tailwind utility classes instead of inline styles or custom CSS in `<style>` blocks when possible
 
-### Typography Standards
-
-- **Pretty quotes**: Always use curly quotes (“”) and apostrophes (‘’) for user-facing text instead of straight quotes ("") and apostrophes ('')
-- **User-facing text**: This applies to Svelte components, form messages, error messages, and any content that will be rendered client-side
-- **Example**: Use "You’re right!" instead of "You're right!" or "That’s correct!" instead of "That's correct!"
-- As an LLM, you have difficulty telling curly apostrophes and straight apostrophes apart. **NEVER** try to change any type of code to another. If you think something is not compiling, you MUST ask the user for clarification.
-
-#### Vanilla HTML forms
+### Vanilla HTML forms
 
 Always prefer web standards, including using the `form` element for GET actions like filtering and pagination, and POST actions like updating a record.
 
@@ -165,7 +158,11 @@ Always prefer web standards, including using the `form` element for GET actions 
 - No `console.log`s committed in the code! You may use them for debugging purposes, but only use `console.info`, `console.warn`, `console.error` appropriately for code meant to remain in the codebase.
 - **Performance measurement**: Always use `performance.now()` instead of `Date.now()` for timing operations. The Performance API provides high-resolution timestamps (microsecond precision) specifically designed for performance measurement, whereas `Date.now()` is lower resolution and intended for timestamps.
 - **NEVER explicitly use `undefined`**. If you have to assign a value, use `null` instead. NEVER call a method like `antiPattern(undefined)`. You may use `antiPattern()`
+- **You MUST design for a single source of truth**: DO NOT hardcode strings and arrays when data can be derived automatically. Example: Use `import.meta.glob` to discover routes from the file system, instead of hardcoding an array of the routes you think we currently have.
 - **NEVER** try format code or check for whitespace yourself with weird commands like `sed`. We have a dedicated formatter you can use at the end of your tasks.
+- It will **NEVER** be a formatting issue.
+- As an LLM, you have difficulty telling curly apostrophes and straight apostrophes apart. **NEVER** try to change any type of code to another. If you think something is not compiling, you MUST ask the user for clarification.
+- If you add a new dependency, you **MUST** `pnpm up -r --latest` to confirm all dependencies are up to their latest versions.
 
 ## QA
 

@@ -10,10 +10,6 @@ Web app for Chrono, implemented with SvelteKit!
 - Schema validation: [Zod 4](https://zod.dev/)
 - Browser tests: [Playwright](https://playwright.dev/)
 - [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [pnpm](https://pnpm.io/) as the package manager
-- [Prettier](https://prettier.io) for code formatting
-- [ESLint](https://eslint.org/) for code linting
-- [Mise](https://mise.jdx.dev/) for managing [Node](https://nodejs.org/en) versions
 - [Drizzle](https://drizzle.dev/) as the ORM for our SQLite database (schema shared via `@repo/db`)
 
 ## Local development
