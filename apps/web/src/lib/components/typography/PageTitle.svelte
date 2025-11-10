@@ -19,3 +19,9 @@
 >
 	{@render children()}
 </h1>
+
+<style>
+	h1 {
+		font-variation-settings: 'SCAN' -30;
+	}
+</style>

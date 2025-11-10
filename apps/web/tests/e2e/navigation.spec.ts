@@ -1,9 +1,5 @@
 import {test, expect} from '@playwright/test'
 
-import {authCredentialsFile} from '../constants'
-
-test.use({storageState: authCredentialsFile})
-
 test('navigation smoke test', async ({page}) => {
 	await page.goto('/')
 	await expect(page.getByTestId('hydrated')).toBeVisible()

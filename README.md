@@ -15,19 +15,11 @@ Monorepo for Chrono, the app with livestream utilities for creators!
 
 - **Web App** ([apps/web/README.md](./apps/web/README.md)) - The core SvelteKit application
 
-## Packages
-
-- **Database** ([packages/db/README.md](./packages/db/README.md)) - Shared database schema, types, and client
-
 ## Local development
 
-`pnpm i` & `pnpm dev` will get you there, but only after you've created your own `.env`!
+`pnpm i` & `pnpm dev` will get you there,!
 
 Make sure you have [pnpm](https://pnpm.io/) installed, and an appropriate version of Node. We recommend [Mise](https://mise.jdx.dev/), which will automatically switch to the Node version specified for this project and enable corepack to also bring in the appropriate version of pnpm, once you `cd` into the root directory.
-
-### Environment variables
-
-The root app can have `.env` / `.env.local` / `.env.test` files. Only `.env.test` is committed to version control, so you should use that as a template to create your own `.env` and/or `.env.local`.
 
 ### Run all dev servers on watch mode
 

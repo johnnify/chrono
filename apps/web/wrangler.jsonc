@@ -1,4 +1,6 @@
 {
+	"$schema": "./node_modules/wrangler/config-schema.json",
+	"workers_dev": true,
 	"name": "chrono",
 	"main": ".svelte-kit/cloudflare/_worker.js",
 	"compatibility_date": "2025-01-01",
@@ -6,20 +8,6 @@
 		"binding": "ASSETS",
 		"directory": ".svelte-kit/cloudflare",
 	},
-	"d1_databases": [
-		{
-			"binding": "DB",
-			"database_name": "chrono",
-			"database_id": "78f63d0e-4ecf-497c-ac7f-b67f3990fa58",
-			"migrations_dir": "drizzle",
-		},
-	],
-	"kv_namespaces": [
-		{
-			"binding": "SESSIONS_KV",
-			"id": "c3579d6d6aa646e399090bfc4165126e",
-		},
-	],
 	"observability": {
 		"logs": {
 			"enabled": true,

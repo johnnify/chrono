@@ -40,7 +40,7 @@
 
 <section class={className} aria-labelledby={id}>
 	<div class="mb-4 flex items-center justify-between">
-		<h2 {id} class="scroll-m-20 text-2xl font-semibold tracking-tight">
+		<h2 {id} class="scroll-m-20 text-2xl tracking-tight">
 			{title}
 		</h2>
 		<Button
@@ -63,15 +63,26 @@
 		<p class="text-muted-foreground text-sm italic">No segments to display</p>
 	{:else}
 		<div class="bg-muted border-border rounded-lg border p-4">
-			<ul class="space-y-1 font-mono text-sm">
+			<ul class="space-y-1 text-sm">
 				{#each segments as segment (segment.csvRowIndex)}
 					<li class="flex gap-2">
-						<span class="font-semibold">{segment.timestamp}</span>
+						<span class="timestamp line-clamp font-mono text-xs/5"
+							>{segment.timestamp}</span
+						>
 						<span>-</span>
-						<span class="flex-1">{segment.description}</span>
+						<span class="description flex-1">{segment.description}</span>
 					</li>
 				{/each}
 			</ul>
 		</div>
 	{/if}
 </section>
+
+<style>
+	.timestamp {
+		font-variation-settings: 'SCAN' -10;
+	}
+	.description {
+		font-variation-settings: 'SCAN' 50;
+	}
+</style>

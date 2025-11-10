@@ -6,15 +6,12 @@ Web app for Chrono, implemented with SvelteKit!
 
 - Meta framework: [SvelteKit](https://kit.svelte.dev/)
 - Styling: [Tailwind](https://tailwindcss.com/) with [shadcn-svelte](https://github.com/huntabyte/shadcn-svelte) & [Unplugin Icons](https://github.com/unplugin/unplugin-icons) for the icons
-- Auth: [Lucia](https://lucia-auth.com/)-style auth heavily using [Arctic](https://arcticjs.dev/)
-- Schema validation: [Zod 4](https://zod.dev/)
 - Browser tests: [Playwright](https://playwright.dev/)
 - [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [Drizzle](https://drizzle.dev/) as the ORM for our SQLite database (schema shared via `@repo/db`)
 
 ## Local development
 
-`cd` into the directory of this readme, and `pnpm i` & `pnpm dev` should get you there: so long as you've got node setup and have created your own `.env`!
+`cd` into the directory of this readme, and `pnpm i` & `pnpm dev` should get you there, so long as you've got Node setup!
 
 ### Install dependencies
 
@@ -23,10 +20,6 @@ pnpm i
 ```
 
 Will install dependencies for everything in the monorepo!
-
-### Environment variables
-
-Only `.env.test` is committed to version control, so you should use that as a template to create your own `.env` & `.env.local`.
 
 ### Start dev server on watch mode
 
@@ -52,22 +45,6 @@ Vitest tests are on the integration/unit level. Faster, but do your best to avoi
 With the dev servers running, OR with the `PUBLIC_ROOT_URL` environment variable set (to, for example, the production deployment), run:
 
 ```sh
-pnpm run test:e2e
-```
-
-### Run integration tests
-
-**With the dev servers running**, run:
-
-```sh
-pnpm run test:integration
-```
-
-### Run all Playwright tests
-
-**With the dev servers running** and **no `PUBLIC_ROOT_URL` set**, run:
-
-```sh
 pnpm run test
 ```
 
@@ -77,14 +54,4 @@ Anytime, run:
 
 ```sh
 pnpm run test:unit
-```
-
-## Other handy scripts
-
-### Update all dependencies
-
-To update all dependencies, including the `package.json` to point to their latest versions, run:
-
-```sh
-pnpm up --latest
 ```

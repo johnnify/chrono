@@ -18,8 +18,6 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - uses: jdx/mise-action@v3
-      - name: Copy committed test environment variables
-        run: cp .env.test .env
       - name: Install dependencies
         run: pnpm install
       - name: Type check with svelte-check
@@ -37,19 +35,15 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - uses: jdx/mise-action@v3
-      - name: Copy committed test environment variables
-        run: cp .env.test .env
       - name: Install dependencies
         run: pnpm install
       - name: Build the app
         run: pnpm build
       - name: Install Playwright Browsers
         run: pnpm exec playwright install --with-deps
-      - name: Run database migrations
-        run: pnpm db:migrate
-      - name: Run Playwright integration tests
-        run: pnpm test:integration
-      - uses: actions/upload-artifact@v4
+      - name: Run Playwright tests
+        run: pnpm test
+      - uses: actions/upload-artifact@v5
         if: always()
         with:
           name: test-results

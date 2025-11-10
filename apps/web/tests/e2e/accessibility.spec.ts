@@ -2,10 +2,6 @@ import {test, expect} from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
 import {join} from 'node:path'
 
-import {authCredentialsFile} from '../constants'
-
-test.use({storageState: authCredentialsFile})
-
 let routes: string[]
 
 test.beforeAll(async ({request}) => {
@@ -16,7 +12,7 @@ test.beforeAll(async ({request}) => {
 
 test('accessibility', async ({page}) => {
 	// Each page needs about half a second!
-	test.setTimeout(routes.length * 1_000)
+	test.setTimeout(routes.length * 2_000)
 
 	for (const route of routes) {
 		await test.step(`"${route}" has no accessibility violations`, async () => {

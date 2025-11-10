@@ -16,9 +16,7 @@
 	<div
 		class="mx-auto grid max-w-2xl place-items-center gap-8 py-32 sm:py-48 lg:py-56"
 	>
-		<h1 class="text-5xl font-semibold tracking-tight text-balance sm:text-7xl">
-			Chrono
-		</h1>
+		<h1 class="text-5xl tracking-tight text-balance sm:text-7xl">Chrono</h1>
 		<AppIcon class="size-32" />
 		<div class="text-muted-foreground text-lg font-medium sm:text-xl/8">
 			<p>
@@ -44,3 +42,9 @@
 		></div>
 	</div>
 </div>
+
+<style>
+	h1 {
+		font-variation-settings: 'SCAN' -25;
+	}
+</style>
