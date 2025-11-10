@@ -10,9 +10,6 @@
 	let {children, class: className, ...restProps}: Props = $props()
 </script>
 
-<h3
-	class={cn('scroll-m-20 text-2xl font-semibold tracking-tight', className)}
-	{...restProps}
->
+<h3 class={cn('scroll-m-20 text-2xl tracking-tight', className)} {...restProps}>
 	{@render children()}
 </h3>

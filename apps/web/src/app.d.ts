@@ -1,4 +1,3 @@
-import '@types/dom-speech-recognition'
 import 'unplugin-icons/types/svelte'
 
 import type {CloudflareUsersRepo} from '$lib/repos/users/CloudflareUsersRepo'
@@ -21,23 +20,10 @@ declare global {
 
 	namespace App {
 		// interface Error {}
-		interface Locals {
-			session: Session | null
-			userRole: UserRole
-			usersRepo: CloudflareUsersRepo
-			rng: Rng
-		}
-		interface PageData {
-			userRole: UserRole
-			rng: Rng
-		}
+		// interface Locals {}
+		// interface PageData {}
 		// interface PageState {}
-		interface Platform {
-			env?: {
-				DB: D1Database
-				SESSIONS_KV: KVNamespace
-			}
-		}
+		// interface Platform {}
 	}
 }
 

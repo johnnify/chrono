@@ -2,7 +2,8 @@
 	import type {Snippet} from 'svelte'
 	import type {OnNavigate} from '@sveltejs/kit'
 	import {ModeWatcher} from 'mode-watcher'
-	import '@fontsource-variable/andada-pro'
+	import '@fontsource-variable/montserrat'
+	import '@fontsource-variable/sixtyfour/scan.css'
 
 	import '../app.css'
 

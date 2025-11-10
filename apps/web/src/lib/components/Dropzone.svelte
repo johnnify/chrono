@@ -174,8 +174,8 @@
 	{#if !file}
 		<!-- Empty State -->
 		<div class="flex flex-col items-center gap-y-2 py-1">
-			<CsvIcon class="text-muted-foreground size-5" />
-			<p class="text-sm">Drop CSV file</p>
+			<CsvIcon class="text-muted-foreground mb-1 size-5" />
+			<p class="drop-file-copy font-mono text-lg">Drop CSV file</p>
 			<p class="text-muted-foreground text-xs">
 				Drag and drop or <Button
 					onclick={handleClick}
@@ -236,3 +236,9 @@
 		</div>
 	{/if}
 </div>
+
+<style>
+	.drop-file-copy {
+		font-variation-settings: 'SCAN' -10;
+	}
+</style>

@@ -70,7 +70,7 @@
 	h5,
 	h6 {
 		text-wrap: balance;
-		@apply font-serif;
+		@apply font-mono;
 	}
 
 	p {
@@ -178,6 +178,7 @@
 	/* View Transitions */
 	body {
 		view-transition-name: body;
+		transition: background-color 500ms var(--ease-3);
 	}
 
 	/* "normal" navigation */
@@ -272,9 +273,12 @@
 	--color-sidebar-ring: var(--sidebar-ring);
 
 	/* Fonts */
-	--font-serif:
-		'Andada Pro Variable', ui-serif, Georgia, Cambria, 'Times New Roman', Times,
-		serif;
+	--font-sans:
+		'Montserrat Variable', ui-sans-serif, system-ui, sans-serif,
+		'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+	--font-mono:
+		'Sixtyfour Variable', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+		'Liberation Mono', 'Courier New', monospace;
 }
 
 @utility container {

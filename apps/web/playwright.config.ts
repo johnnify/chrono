@@ -1,14 +1,4 @@
 import {defineConfig, devices, type Project} from '@playwright/test'
-import dotenvFlow from 'dotenv-flow'
-import path from 'path'
-import {fileURLToPath} from 'url'
-
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
-// import environment variables
-dotenvFlow.config({
-	path: __dirname,
-})
 
 /* Configure projects for major browsers */
 const projects: Project[] = [
@@ -53,24 +43,6 @@ const projects: Project[] = [
 	//   use: { ...devices['Desktop Chrome'], channel: 'chrome' },
 	// },
 ]
-
-// Only run auth setup and cleanup when we hav an Auth Secret
-if (process.env.MOCK_AUTH_SECRET) {
-	projects.forEach((project) => {
-		project.dependencies = ['setup']
-	})
-	projects.push(
-		{
-			name: 'setup',
-			testMatch: /global\.setup\.ts/,
-			teardown: 'cleanup',
-		},
-		{
-			name: 'cleanup',
-			testMatch: /global\.teardown\.ts/,
-		},
-	)
-}
 
 /**
  * See https://playwright.dev/docs/test-configuration.

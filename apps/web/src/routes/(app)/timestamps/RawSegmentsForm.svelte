@@ -23,10 +23,13 @@
 			<li class={cn(alertVariants(), 'flex')}>
 				<Field.Group>
 					<div class="grid grid-cols-6 gap-4">
-						<Field.Field class="col-span-3 flex-row items-center md:col-span-1">
+						<Field.Field
+							class="col-span-3 flex-row items-center font-mono md:col-span-1"
+						>
 							<Field.Label class="sr-only" for="timestamp-{segment.csvRowIndex}"
 								>Timestamp</Field.Label
 							>
+							<!-- TODO: This could help transform input into HH:MM:SS -->
 							<Input
 								bind:value={segment.timestamp}
 								id="timestamp-{segment.csvRowIndex}"

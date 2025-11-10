@@ -15,8 +15,6 @@ Locally, the dev server is always running at http://localhost:5173/
 ### Monorepo Structure
 
 - `apps/web/` - Main SvelteKit application
-- `packages/db/` - Shared database schema, types, and client
-- Turborepo manages the build pipeline and caching
 
 ## Development Commands
 
@@ -38,30 +36,11 @@ From `apps/web/` directory:
 - `pnpm test:unit` - Run Vitest unit tests
 - `pnpm test` - Run all Playwright tests
 - `pnpm check` - Type check with svelte-check
-- `pnpm db:generate-migrations` - Generate Drizzle migrations
-- `pnpm db:migrate` - Apply migrations locally **⚠️ NEVER RUN THIS YOURSELF - USER ONLY**
-
-#### Database Migration Policy
-
-**CRITICAL: NEVER run database migrations (`pnpm db:migrate` or `pnpm --filter @repo/web db:migrate`) yourself under ANY circumstances.**
-
-When making database schema changes:
-
-1. ✅ Update the schema files in `packages/db/src/schema/`
-2. ❌ DO NOT run `pnpm db:migrate` or attempt to apply migrations
-3. ✅ Let the user handle migration generation and application
-4. ❌ DO NOT manually edit migration files or the migration journal
-5. ❌ DO NOT run migration-related bash commands
-
-The user will handle all migration operations manually.
 
 ### Tech Stack
 
 - **Framework**: SvelteKit with Svelte 5 (Runes)
 - **Styling**: Tailwind CSS v4 + `shadcn-svelte` components
-- **Auth**: Arctic for OAuth, custom session management according to best practices defined by Lucia
-- **Schema Validation**: Zod
-- **Database**: SQLite with Drizzle ORM
 - **Testing**: Playwright (e2e/integration), Vitest (unit)
 - **Icons**: Unplugin Icons
 - **Deployment**: Cloudflare Workers
@@ -69,22 +48,8 @@ The user will handle all migration operations manually.
 ### Key Directories
 
 - `src/lib/components/` - Reusable Svelte components
-- `src/lib/server/` - Server-side utilities (auth, db)
 - `src/routes/` - SvelteKit file-based routing
 - `tests/` - Playwright test suites
-
-### Database Schema
-
-Shared across apps via `@repo/db` package, located in `packages/db/src/schema/`:
-
-- `auth.ts` - Users and sessions tables for authentication
-
-### Authentication
-
-- Session-based auth with secure cookie handling
-- OAuth providers configured via Arctic
-- Mock authentication available for development/testing
-- Protected routes handled via hooks
 
 ### Testing Strategy
 
@@ -123,11 +88,6 @@ Examples of USELESS tests to NEVER write:
 If you have to write a unit test, it must answer: "What bug would this catch that TypeScript can't?"
 
 EVERY test should have a realistic to see fail.
-
-### Environment Setup
-
-- Copy `.env.test` to create `.env` and `.env.local`
-- Required for development due to auth secrets and database configuration
 
 ### Important Notes
 
