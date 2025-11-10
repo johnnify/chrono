@@ -9,12 +9,13 @@
 		"lint": "turbo lint",
 		"test": "turbo test",
 		"check": "turbo check",
+		"codegen": "turbo codegen",
 		"sanity": "turbo test check lint"
 	},
 	"devDependencies": {
 		"@prettier/plugin-oxc": "^0.0.4",
 		"@types/node": "^24.10.0",
-		"oxlint": "^1.26.0",
+		"oxlint": "^1.28.0",
 		"oxlint-tsgolint": "^0.5.1",
 		"prettier": "^3.6.2",
 		"prettier-plugin-svelte": "^3.4.0",

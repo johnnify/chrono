@@ -1,5 +1,4 @@
 import '@types/dom-speech-recognition'
-import {D1Database, KVNamespace} from '@cloudflare/workers-types'
 import 'unplugin-icons/types/svelte'
 
 import type {CloudflareUsersRepo} from '$lib/repos/users/CloudflareUsersRepo'

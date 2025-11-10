@@ -1,7 +1,6 @@
 import {sha256} from '@oslojs/crypto/sha2'
 import {encodeHexLowerCase} from '@oslojs/encoding'
 import {eq, and} from 'drizzle-orm'
-import type {KVNamespace} from '@cloudflare/workers-types'
 import {
 	type DrizzleDb,
 	type AuthProviderId,
@@ -154,8 +153,15 @@ export class CloudflareUsersRepo implements UsersRepoInterface {
 		return createdUser.id
 	}
 
-	updateUserProfile = (user: {id: string; name: string}): Promise<void> =>
-		this.#db.update(users).set({name: user.name}).where(eq(users.id, user.id))
+	updateUserProfile = async (user: {
+		id: string
+		name: string
+	}): Promise<void> => {
+		await this.#db
+			.update(users)
+			.set({name: user.name})
+			.where(eq(users.id, user.id))
+	}
 
 	createSession = async (token: string, userId: string): Promise<Session> => {
 		const sessionId = encodeHexLowerCase(
