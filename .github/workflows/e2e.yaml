@@ -19,7 +19,7 @@ jobs:
       - name: Install Playwright Browsers
         run: pnpm exec playwright install --with-deps
       - name: Run E2E tests against production
-        run: pnpm test:e2e
+        run: pnpm test
         env:
           PUBLIC_ROOT_URL: https://chrono.j-e7c.workers.dev/
       - uses: actions/upload-artifact@v5
